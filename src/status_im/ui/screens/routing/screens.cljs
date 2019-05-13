@@ -172,6 +172,7 @@
    :currency-settings                currency-settings/currency-settings
    :backup-seed                      profile.seed/backup-seed
    :tribute-to-talk                  tr-to-talk/tribute-to-talk
+   :intro-wizard                     intro/wizard
    :reset-card                       hardwallet.settings/reset-card
    :keycard-settings                 hardwallet.settings/keycard-settings
    :mobile-network-settings          mobile-network-settings/mobile-network-settings

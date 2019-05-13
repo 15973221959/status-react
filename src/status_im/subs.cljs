@@ -1868,3 +1868,11 @@
                             (or (string/blank? screen-snt-amount)
                                 (#{"0" "0.0" "0.00"} screen-snt-amount)
                                 (string/ends-with? screen-snt-amount ".")))))))))
+
+;; INTRO WIZARD
+(re-frame/reg-sub
+ :intro-wizard
+ (fn [db]
+   (:intro-wizard db)))
+
+

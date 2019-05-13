@@ -145,6 +145,34 @@
                               (dissoc :password :password-confirm :name :error)))}
             (navigation/navigate-to-cofx :create-account nil)))
 
+(fx/defn intro-wizard [{:keys [db] :as cofx}]
+  (fx/merge {:db (assoc db :intro-wizard {:step 1})}
+            (navigation/navigate-to-cofx :intro-wizard nil)))
+
+(fx/defn intro-step-back [{:keys [db] :as cofx}]
+  (let  [step (get-in db [:intro-wizard :step])]
+
+    (if (< 1 step)
+      (fx/merge {:db (assoc db :intro-wizard {:step (dec step)})}
+                (navigation/navigate-to-cofx :intro-wizard nil))
+
+      (fx/merge {:db (dissoc db :intro-wizard)}
+                (navigation/navigate-to-clean :intro nil)))))
+
+(fx/defn intro-step-forward [{:keys [db] :as cofx}]
+  (let  [step (get-in db [:intro-wizard :step])]
+
+    (if (= step 7)
+      (fx/merge {:db (dissoc db :intro-wizard)}
+                (navigation/navigate-to-cofx :welcome nil))
+      (fx/merge {:db (assoc db :intro-wizard {:step (inc step)})}
+                (navigation/navigate-to-cofx :intro-wizard nil)))))
+
+(defn get-new-key-code [current-code digit]
+  (str current-code digit))
+
+(fx/defn code-digit-pressed [{:keys [db] :as cofx} digit]
+  {:db (update-in db [:intro-wizard :key-code] get-new-key-code digit)})
 ;;;; COFX
 
 (re-frame/reg-cofx

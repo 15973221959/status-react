@@ -21,7 +21,7 @@
   {:flex-direction :row})
 
 (def number-pad
-  {:flex          1
+  {;:flex          1
    :align-items   :center
    :margin-bottom 24
    :min-height    292

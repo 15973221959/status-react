@@ -8,6 +8,7 @@
     :recover
     :accounts
     :intro
+    :intro-wizard
     :hardwallet-authentication-method
     :hardwallet-connect
     :enter-pin-login
@@ -37,6 +38,6 @@
 
 (defn intro-stack []
   (-> (login-stack :intro)
-      (update :screens conj :intro)
+      (update :screens conj :intro :intro-wizard)
       (assoc :name :intro-stack)
       (assoc :config {:initialRouteName :intro})))

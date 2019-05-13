@@ -273,6 +273,26 @@
  (fn [cofx _]
    (hardwallet/navigate-to-authentication-method cofx)))
 
+(handlers/register-handler-fx
+ :accounts.create.ui/intro-wizard
+ (fn [cofx _]
+   (accounts.create/intro-wizard cofx)))
+
+(handlers/register-handler-fx
+ :intro-wizard/step-back-pressed
+ (fn [cofx _]
+   (accounts.create/intro-step-back cofx)))
+
+(handlers/register-handler-fx
+ :intro-wizard/step-forward-pressed
+ (fn [cofx _]
+   (accounts.create/intro-step-forward cofx)))
+
+(handlers/register-handler-fx
+ :intro-wizard/code-digit-pressed
+ (fn [cofx [_ digit]]
+   (accounts.create/code-digit-pressed cofx digit)))
+
 ;; accounts recover module
 
 (handlers/register-handler-fx

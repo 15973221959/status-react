@@ -167,6 +167,13 @@
 (def welcome-view
   {:flex 1})
 
+(def action-button-container
+  {:position    :absolute
+   :align-items :center
+   :bottom      (+ tabs.styles/tabs-diff 6)
+   :width       40
+   :height      40})
+
 (def welcome-image-container
   {:align-items :center
    :margin-top  42})
@@ -181,13 +188,6 @@
    :text-align        :center
    :margin-horizontal 32
    :color             colors/gray})
-
-(def action-button-container
-  {:position    :absolute
-   :align-items :center
-   :bottom      (+ tabs.styles/tabs-diff 6)
-   :width       40
-   :height      40})
 
 (def action-button
   {:width            40

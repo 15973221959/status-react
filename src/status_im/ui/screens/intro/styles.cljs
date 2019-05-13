@@ -7,9 +7,59 @@
    :padding-horizontal 30})
 
 (def intro-logo-container
-  {:flex            1
+  {;:flex            1
    :align-items     :center
-   :justify-content :center})
+   :justify-content :center
+   ;:margin-bottom 110
+})
+
+(def welcome-image-container
+  {:align-items :center
+   :margin-top  42})
+
+(def intro-button
+  {:margin-vertical    8
+   :padding-horizontal 32
+   :align-self         :center
+   :justify-content    :center
+   :align-items        :center})
+
+(def wizard-title
+  {:font-size 22
+   :line-height 28
+   :text-align :center
+   :font-weight "600"
+   :margin-bottom 16})
+
+(def wizard-text
+  {:font-size 15
+   :line-height 22
+   :color colors/gray
+   :text-align :center})
+
+(def welcome-text
+  {:typography  :header
+   :margin-top  32
+   :text-align  :center})
+
+(def welcome-text-bottom-note
+  {:font-size   12
+   :line-height 14
+   :color       colors/gray
+   :text-align  :center})
+
+(def wizard-bottom-note
+  {:font-size 15
+   :line-height 22
+   :margin-top 20
+   :color colors/gray
+   :text-align :center})
+
+(def welcome-text-description
+  {:margin-top        8
+   :text-align        :center
+   :margin-horizontal 32
+   :color             colors/gray})
 
 (def intro-logo
   {:size      111
@@ -31,4 +81,4 @@
 
 (def bottom-button-container
   {:margin-bottom 6
-   :margin-top    38})
+   :margin-top    16})
