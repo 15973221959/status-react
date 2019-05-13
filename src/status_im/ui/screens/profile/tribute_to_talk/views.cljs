@@ -3,6 +3,7 @@
             [re-frame.core :as re-frame]
             [status-im.i18n :as i18n]
             [status-im.react-native.resources :as resources]
+            [status-im.ui.components.numpad.views :as numpad]
             [status-im.ui.components.colors :as colors]
             [status-im.ui.components.common.common :as components.common]
             [status-im.ui.components.icons.vector-icons :as icons]
@@ -63,35 +64,6 @@
     " SNT"]
    [snt-asset-value fiat-value]])
 
-(defn number-view
-  [numpad-symbol {:keys [on-press]}]
-  [react/touchable-opacity
-   {:on-press #(on-press numpad-symbol)}
-   [react/view {:style styles/number-container}
-    (if (= numpad-symbol :remove)
-      [icons/icon :main-icons/backspace {:color colors/blue}]
-      [react/text {:style styles/number} numpad-symbol])]])
-
-(defn number-row
-  [[left middle right] opts]
-  [react/view {:style styles/number-row}
-   [number-view left opts]
-   [react/view {:style styles/vertical-number-separator}]
-   [number-view middle opts]
-   [react/view {:style styles/vertical-number-separator}]
-   [number-view right opts]])
-
-(defn number-pad
-  [opts]
-  [react/view {:style styles/number-pad}
-   [number-row [1 2 3] opts]
-   [react/view {:style (styles/horizontal-separator 12 24)}]
-   [number-row [4 5 6] opts]
-   [react/view {:style (styles/horizontal-separator 12 24)}]
-   [number-row [7 8 9] opts]
-   [react/view {:style (styles/horizontal-separator 12 24)}]
-   [number-row ["." 0 :remove] opts]])
-
 (defn set-snt-amount
   [snt-amount]
   [react/scroll-view
@@ -99,9 +71,9 @@
    [react/view {:style (styles/horizontal-separator 16 32)}]
    [snt-amount-label snt-amount]
    [react/view {:style (styles/horizontal-separator 16 40)}]
-   [number-pad {:on-press (fn [numpad-symbol]
-                            (re-frame/dispatch
-                             [:tribute-to-talk.ui/numpad-key-pressed numpad-symbol]))}]
+   [numpad/number-pad {:on-press (fn [numpad-symbol]
+                                   (re-frame/dispatch
+                                    [:tribute-to-talk.ui/numpad-key-pressed numpad-symbol]))}]
    [react/i18n-text {:style (assoc styles/description-label :margin-horizontal 16)
                      :key   :tribute-to-talk-set-snt-amount}]])
 
