@@ -9,7 +9,7 @@ let
   utils = callPackage ../utils.nix { inherit xcodeWrapper; };
   gomobile = callPackage ./gomobile { inherit (androidPkgs) platform-tools; inherit composeXcodeWrapper xcodewrapperArgs utils buildGoPackage; };
   buildStatusGoDesktopLib = callPackage ./build-desktop-status-go.nix { inherit buildGoPackage go xcodeWrapper utils; };
-  buildStatusGoMobileLib = callPackage ./build-mobile-status-go.nix { inherit buildGoPackage go gomobile xcodeWrapper utils; };
+  buildStatusGoMobileLib = callPackage ./build-mobile-status-go.nix { inherit buildGoPackage go gomobile xcodeWrapper androidPkgs utils; };
   extractStatusGoConfig = f: lib.last (lib.splitString "\n" (lib.fileContents f));
   owner = lib.fileContents ../../STATUS_GO_OWNER;
   version = extractStatusGoConfig ../../STATUS_GO_VERSION; # TODO: Simplify this path search with lib.locateDominatingFile
@@ -54,7 +54,7 @@ let
 
   xcodeWrapper = composeXcodeWrapper xcodewrapperArgs;
 
-  statusGoArgs = { inherit owner repo rev version goPackagePath src goBuildFlags goBuildLdFlags; };
+  statusGoArgs = { inherit owner repo rev version goPackagePath src sha256 goBuildFlags goBuildLdFlags; };
   status-go-packages = {
     desktop = buildStatusGoDesktopLib (statusGoArgs // {
       outputFileName = "libstatus.a";
