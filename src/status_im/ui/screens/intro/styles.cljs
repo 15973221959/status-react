@@ -37,6 +37,16 @@
    :color colors/gray
    :text-align :center})
 
+(def account-name
+  {:font-size 15
+   :line-height 22
+   :font-weight "500"})
+
+(def account-address
+  {:font-size 15
+   :line-height 22
+   :color colors/gray})
+
 (def welcome-text
   {:typography  :header
    :margin-top  32

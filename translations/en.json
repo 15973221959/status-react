@@ -172,6 +172,7 @@
     "intro-wizard-title7": "Enable notifications",
     "intro-wizard-text7": "Status will notify you about new messages and transactions. You can edit your notification preferences later in settings",
     "generate-a-key": "Generate a key",
+    "generating-keys": "Generating keys...",
     "you-will-need-this-code": "You'll need this code to open Status and sign transactions",
     "not-implemented": "!not implemented",
     "new-contact": "New contact",

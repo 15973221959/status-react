@@ -153,7 +153,7 @@
   (let  [step (get-in db [:intro-wizard :step])]
 
     (if (< 1 step)
-      (fx/merge {:db (assoc db :intro-wizard {:step (dec step)})}
+      (fx/merge {:db (assoc-in db [:intro-wizard :step] (dec step))}
                 (navigation/navigate-to-cofx :intro-wizard nil))
 
       (fx/merge {:db (dissoc db :intro-wizard)}
@@ -162,11 +162,24 @@
 (fx/defn intro-step-forward [{:keys [db] :as cofx}]
   (let  [step (get-in db [:intro-wizard :step])]
 
-    (if (= step 7)
-      (fx/merge {:db (dissoc db :intro-wizard)}
-                (navigation/navigate-to-cofx :welcome nil))
-      (fx/merge {:db (assoc db :intro-wizard {:step (inc step)})}
-                (navigation/navigate-to-cofx :intro-wizard nil)))))
+    (cond (= step 7)
+          (fx/merge {:db (dissoc db :intro-wizard)}
+                    (navigation/navigate-to-cofx :welcome nil))
+          (= step 1)
+          {:db (assoc-in db [:intro-wizard :generating-keys?] true)
+           :dispatch-later [{:dispatch [:intro-wizard/generate-keys]
+                             :ms 3000}]}
+
+          :else (fx/merge {:db (assoc-in db [:intro-wizard :step] (inc step))}
+                          (navigation/navigate-to-cofx :intro-wizard nil)))))
+
+(fx/defn on-keys-generated [{:keys [db] :as cofx}]
+  (fx/merge
+   {:db (-> db :intro-wizard
+            (dissoc :generating-keys?)
+            (assoc :accounts [{:id "0x04746b0ef947f202c2d13d6be8acda86f81157f654d58efa2828c885c605d8b35674cb62072f51251f98651853a31d01cbe758bfa0d2ef6d6305f554e76c374c92"}])
+            (assoc :step 2))}
+   (navigation/navigate-to-cofx :intro-wizard nil)))
 
 (defn get-new-key-code [current-code digit]
   (str current-code digit))

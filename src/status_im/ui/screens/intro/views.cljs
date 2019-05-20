@@ -3,7 +3,10 @@
   (:require [status-im.ui.components.react :as react]
             [re-frame.core :as re-frame]
             [status-im.react-native.resources :as resources]
+            [status-im.utils.identicon :as identicon]
+            [status-im.ui.components.radio :as radio]
             [taoensso.timbre :as log]
+            [status-im.utils.gfycat.core :as gfy]
             [status-im.ui.components.colors :as colors]
             [reagent.core :as r]
             [status-im.ui.components.toolbar.actions :as actions]
@@ -95,7 +98,23 @@
    {:image (:sample-key resources/ui)
     :width 154 :height 140}])
 
-(defn choose-key [])
+(defn choose-key [{:keys [accounts] :as wizard-state}]
+  [react/scroll-view
+   [react/view
+    (for [acc accounts]
+      [react/view {:style {:flex-direction :row}}
+       [react/image {:source {:uri (identicon/identicon (:id acc))}
+                     :style {:width 40 :height 40}}]
+       [react/view
+        [react/text {:style styles/account-name
+                     :number-of-lines 1
+                     :ellipsize-mode :middle}
+         (gfy/generate-gfy (:id acc))]
+        [react/text {:style styles/account-address
+                     :number-of-lines 1
+                     :ellipsize-mode :middle}
+         (:id acc)]]
+       [radio/radio true]])]])
 
 (defn select-key-storage [])
 
@@ -113,8 +132,22 @@
 
 (defn enable-notifications [])
 
+(defn bottom-bar [{:keys [step generating-keys?] :as wizard-state}]
+  [react/view {:style {:margin-bottom 32}}
+   (if generating-keys?
+     [react/activity-indicator {:animating true
+                                :size      :large}]
+     [components.common/button {:button-style styles/intro-button
+                              ;:disabled?    disable-button?
+                                :on-press     #(re-frame/dispatch
+                                                [:intro-wizard/step-forward-pressed])
+                                :label        (i18n/label :generate-a-key)}])
+   (when (= 1 step)
+     [react/text {:style styles/wizard-bottom-note}
+      (i18n/label (if generating-keys? :t/generating-keys :t/this-will-take-few-seconds))])])
+
 (defview wizard []
-  (letsubs [{:keys [step]} [:intro-wizard]]
+  (letsubs [{:keys [step generating-keys?] :as wizard-state} [:intro-wizard]]
     [react/view {:style {:flex 1}}
      [toolbar/toolbar
       nil
@@ -138,11 +171,4 @@
         5 [confirm-code]
         6 [enable-fingerprint]
         7 [enable-notifications])
-      [react/view {:style {:margin-bottom 32}}
-       [components.common/button {:button-style styles/intro-button
-                                  ;:disabled?    disable-button?
-                                  :on-press     #(re-frame/dispatch
-                                                  [:intro-wizard/step-forward-pressed])
-                                  :label        (i18n/label :generate-a-key)}]
-       [react/text {:style styles/wizard-bottom-note}
-        (i18n/label :t/this-will-take-few-seconds)]]]]))
+      [bottom-bar wizard-state]]]))
