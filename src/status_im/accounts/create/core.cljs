@@ -167,18 +167,28 @@
                     (navigation/navigate-to-cofx :welcome nil))
           (= step 1)
           {:db (assoc-in db [:intro-wizard :generating-keys?] true)
-           :dispatch-later [{:dispatch [:intro-wizard/generate-keys]
-                             :ms 3000}]}
+           #_:dispatch-later #_[{:dispatch [:intro-wizard/generate-keys]
+                                 :ms 3000}]
+           :intro-wizard/new-onboarding {:n 5 :mnemonic-length 12}}
 
           :else (fx/merge {:db (assoc-in db [:intro-wizard :step] (inc step))}
                           (navigation/navigate-to-cofx :intro-wizard nil)))))
+(re-frame/reg-fx
+ :intro-wizard/new-onboarding
+ (fn [{:keys [n mnemonic-length]}]
+   (log/info "#:intro-wizard/new-onboarding")
+   (status/new-onboarding n mnemonic-length
+                          #(re-frame/dispatch [:intro-wizard/on-keys-generated (types/json->clj %)]))))
 
-(fx/defn on-keys-generated [{:keys [db] :as cofx}]
+(fx/defn on-keys-generated [{:keys [db] :as cofx} result]
+  (log/info "#on-keys-generated" (count (:accounts result)))
   (fx/merge
-   {:db (-> db :intro-wizard
-            (dissoc :generating-keys?)
-            (assoc :accounts [{:id "0x04746b0ef947f202c2d13d6be8acda86f81157f654d58efa2828c885c605d8b35674cb62072f51251f98651853a31d01cbe758bfa0d2ef6d6305f554e76c374c92"}])
-            (assoc :step 2))}
+   {:db (update db :intro-wizard
+                (fn [data]
+                  (-> data
+                      (dissoc :generating-keys?)
+                      (assoc :accounts (:accounts result))
+                      (assoc :step 2))))}
    (navigation/navigate-to-cofx :intro-wizard nil)))
 
 (defn get-new-key-code [current-code digit]

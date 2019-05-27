@@ -1,5 +1,6 @@
 (ns status-im.native-module.core
-  (:require [status-im.native-module.impl.module :as native-module]))
+  (:require [status-im.native-module.impl.module :as native-module]
+            [taoensso.timbre :as log]))
 
 (def adjust-resize 16)
 
@@ -21,6 +22,12 @@
 
 (defn recover-account [passphrase password callback]
   (native-module/recover-account passphrase password callback))
+
+(defn new-onboarding [n mnemonic-length callback]
+  (native-module/new-onboarding n mnemonic-length callback))
+
+(defn import-onboarding-account [id password]
+  (native-module/import-onboarding-account id password callback))
 
 (defn login [address password callback]
   (native-module/login address password callback))

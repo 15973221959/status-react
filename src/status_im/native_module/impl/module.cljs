@@ -1,6 +1,7 @@
 (ns status-im.native-module.impl.module
   (:require [status-im.ui.components.react :as r]
             [re-frame.core :as re-frame]
+            [taoensso.timbre :as log]
             [status-im.react-native.js-dependencies :as rn-dependencies]
             [clojure.string :as string]
             [status-im.utils.platform :as platform]))
@@ -60,6 +61,14 @@
 (defn recover-account [passphrase password on-result]
   (when (and @node-started (status))
     (.recoverAccount (status) passphrase password on-result)))
+
+(defn new-onboarding [n mnemonic-length on-result]
+  (when true #_(and @node-started (status))
+        (.newOnboarding (status) n mnemonic-length on-result)))
+
+(defn import-onboarding-account [id password on-result]
+  (when true #_(and @node-started (status))
+        (.importOnboardingAccount (status) id password on-result)))
 
 (defn login [address password on-result]
   (when (and @node-started (status))

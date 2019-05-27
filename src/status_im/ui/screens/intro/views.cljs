@@ -28,21 +28,21 @@
     (fn []
       [react/view {:style {:margin-horizontal 32
                            :align-items :center}}
-       [react/scroll-view {:horizontal true
-                           :paging-enabled true
-                           :ref #(reset! scroll-view-ref %)
-                           :shows-vertical-scroll-indicator false
-                           :shows-horizontal-scroll-indicator false
-                           :pinch-gesture-enabled false
-                           :on-scroll #(let [x (.-nativeEvent.contentOffset.x %)
-                                             _ (log/info "#scroll" x view-width)]
-                                         (cond (> x max-width)
-                                               (.scrollTo @scroll-view-ref (clj->js {:x 0}))
-                                               (< x 0)
-                                               (.scrollTo @scroll-view-ref (clj->js {:x max-width}))
-                                               :else (reset! scroll-x x)))
-                           :style {:width view-width
-                                   :margin-vertical 32}}
+       [(react/scroll-view) {:horizontal true
+                             :paging-enabled true
+                             :ref #(reset! scroll-view-ref %)
+                             :shows-vertical-scroll-indicator false
+                             :shows-horizontal-scroll-indicator false
+                             :pinch-gesture-enabled false
+                             :on-scroll #(let [x (.-nativeEvent.contentOffset.x %)
+                                               _ (log/info "#scroll" x view-width)]
+                                           (cond (> x max-width)
+                                                 (.scrollTo @scroll-view-ref (clj->js {:x 0}))
+                                                 (< x 0)
+                                                 (.scrollTo @scroll-view-ref (clj->js {:x max-width}))
+                                                 :else (reset! scroll-x x)))
+                             :style {:width view-width
+                                     :margin-vertical 32}}
         (for [s slides]
           ^{:key (:title s)}
           [react/view {:style {:width view-width}}
@@ -99,22 +99,24 @@
     :width 154 :height 140}])
 
 (defn choose-key [{:keys [accounts] :as wizard-state}]
-  [react/scroll-view
-   [react/view
-    (for [acc accounts]
-      [react/view {:style {:flex-direction :row}}
-       [react/image {:source {:uri (identicon/identicon (:id acc))}
-                     :style {:width 40 :height 40}}]
-       [react/view
-        [react/text {:style styles/account-name
-                     :number-of-lines 1
-                     :ellipsize-mode :middle}
-         (gfy/generate-gfy (:id acc))]
-        [react/text {:style styles/account-address
-                     :number-of-lines 1
-                     :ellipsize-mode :middle}
-         (:id acc)]]
-       [radio/radio true]])]])
+  [react/view {:style {:margin-top 110}}
+   (for [acc accounts]
+     ^{:key (:pubkey acc)}
+     [react/view {:style {:flex-direction :row
+                          :align-items :center
+                          :padding-vertical 10}}
+      [react/image {:source {:uri (identicon/identicon (:pubkey acc))}
+                    :style {:width 40 :height 40}}]
+      [react/view {:style {:margin-horizontal 16 :flex 1}}
+       [react/text {:style styles/account-name
+                    :number-of-lines 1
+                    :ellipsize-mode :middle}
+        (gfy/generate-gfy (:pubkey acc))]
+       [react/text {:style styles/account-address
+                    :number-of-lines 1
+                    :ellipsize-mode :middle}
+        (:pubkey acc)]]
+      [radio/radio true]])])
 
 (defn select-key-storage [])
 
@@ -163,12 +165,14 @@
 
        [react/text {:style styles/wizard-title} (i18n/label (keyword (str "intro-wizard-title" step)))]
        [react/text {:style styles/wizard-text} (i18n/label (keyword (str "intro-wizard-text" step)))]]
-      (case step
-        1 [generate-key]
-        2 [choose-key]
-        3 [select-key-storage]
-        4 [create-code]
-        5 [confirm-code]
-        6 [enable-fingerprint]
-        7 [enable-notifications])
+      (do
+        (log/info "#wizard-state" wizard-state)
+        (case step
+          1 [generate-key]
+          2 [choose-key wizard-state]
+          3 [select-key-storage]
+          4 [create-code]
+          5 [confirm-code]
+          6 [enable-fingerprint]
+          7 [enable-notifications]))
       [bottom-bar wizard-state]]]))

@@ -294,9 +294,9 @@
    (accounts.create/code-digit-pressed cofx digit)))
 
 (handlers/register-handler-fx
- :intro-wizard/generate-keys
- (fn [cofx _]
-   (accounts.create/on-keys-generated cofx)))
+ :intro-wizard/on-keys-generated
+ (fn [cofx [_ result]]
+   (accounts.create/on-keys-generated cofx result)))
 ;; accounts recover module
 
 (handlers/register-handler-fx
