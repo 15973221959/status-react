@@ -26,7 +26,7 @@
 (defn new-onboarding [n mnemonic-length callback]
   (native-module/new-onboarding n mnemonic-length callback))
 
-(defn import-onboarding-account [id password]
+(defn import-onboarding-account [id password callback]
   (native-module/import-onboarding-account id password callback))
 
 (defn login [address password callback]

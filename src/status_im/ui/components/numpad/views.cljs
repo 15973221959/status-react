@@ -6,7 +6,7 @@
 
 (defn number-view
   [numpad-symbol {:keys [on-press]}]
-  [react/touchable-opacity
+  [(react/touchable-opacity)
    {:on-press #(on-press numpad-symbol)}
    [react/view {:style styles/number-container}
     (if (= numpad-symbol :remove)

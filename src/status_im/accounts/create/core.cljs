@@ -171,6 +171,10 @@
                                  :ms 3000}]
            :intro-wizard/new-onboarding {:n 5 :mnemonic-length 12}}
 
+          (= step 4)
+          {:db (-> db
+                   (assoc-in [:intro-wizard :stored-key-code] (get-in db [:intro-wizard :key-code]))
+                   (assoc-in [:intro-wizard :step] 5))}
           :else (fx/merge {:db (assoc-in db [:intro-wizard :step] (inc step))}
                           (navigation/navigate-to-cofx :intro-wizard nil)))))
 (re-frame/reg-fx
@@ -188,13 +192,30 @@
                   (-> data
                       (dissoc :generating-keys?)
                       (assoc :accounts (:accounts result))
+                      (assoc :selected-storage-type :default)
+                      (assoc :selected-pubkey (-> result :accounts first :pubkey))
                       (assoc :step 2))))}
    (navigation/navigate-to-cofx :intro-wizard nil)))
 
+(fx/defn on-key-selected [{:keys [db] :as cofx} pubkey]
+  {:db (assoc-in db [:intro-wizard :selected-pubkey] pubkey)})
+
+(fx/defn on-key-storage-selected [{:keys [db] :as cofx} storage-type]
+  (log/info "#on-key-storage-selected" storage-type)
+  {:db (assoc-in db [:intro-wizard :selected-storage-type] storage-type)})
+
+(fx/defn on-learn-more-pressed [{:keys [db] :as cofx}]
+  {:db (assoc-in db [:intro-wizard :show-learn-more?] true)})
+
 (defn get-new-key-code [current-code digit]
-  (str current-code digit))
+  (cond (= digit :remove)
+        (subs current-code 0 (dec (count current-code)))
+        (= (count current-code) 6)
+        current-code
+        :else (str current-code digit)))
 
 (fx/defn code-digit-pressed [{:keys [db] :as cofx} digit]
+  (log/info "code-digit-pressed" digit)
   {:db (update-in db [:intro-wizard :key-code] get-new-key-code digit)})
 ;;;; COFX
 

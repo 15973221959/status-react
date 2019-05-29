@@ -297,6 +297,21 @@
  :intro-wizard/on-keys-generated
  (fn [cofx [_ result]]
    (accounts.create/on-keys-generated cofx result)))
+
+(handlers/register-handler-fx
+ :intro-wizard/on-key-selected
+ (fn [cofx [_ pubkey]]
+   (accounts.create/on-key-selected cofx pubkey)))
+
+(handlers/register-handler-fx
+ :intro-wizard/on-key-storage-selected
+ (fn [cofx [_ storage-type]]
+   (accounts.create/on-key-storage-selected cofx storage-type)))
+
+(handlers/register-handler-fx
+ :intro-wizard/on-learn-more-pressed
+ (fn [cofx _]
+   (accounts.create/on-learn-more-pressed cofx)))
 ;; accounts recover module
 
 (handlers/register-handler-fx
