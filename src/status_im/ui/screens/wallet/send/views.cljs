@@ -61,7 +61,7 @@
                   :accessibility-label :advanced-button}
       [react/i18n-text {:style (merge wallet.components.styles/label
                                       styles/advanced-label)
-                        :key   :wallet-advanced}]
+                        :key   :advanced}]
       [vector-icons/icon (if advanced? :main-icons/dropdown-up :main-icons/dropdown) {:color :white}]]]]
    (when advanced?
      [advanced-cartouche native-currency transaction])])
