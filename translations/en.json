@@ -177,6 +177,7 @@
     "this-device": "This device",
     "this-device-desc": "Your key will be encrypted and securely stored",
     "keycard-desc": "Android only. You will need to get a Keycard first",
+    "encrypt-with-password": "Encrypt with password",
     "not-implemented": "!not implemented",
     "new-contact": "New contact",
     "datetime-second": {
@@ -729,6 +730,7 @@
     "transactions-history": "Transaction history",
     "fetching-messages": "Fetching messages... ({{requests-left}} requests left)",
     "password_error1": "Passwords don't match.",
+    "passcode-error": "Passcodes don't match.",
     "your-contact-code": "Granting access authorizes this DApp to retrieve your contact code",
     "password-placeholder": "At least 6 characters",
     "clear-history-action": "Clear",

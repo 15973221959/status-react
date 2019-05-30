@@ -151,9 +151,12 @@
 
 (fx/defn intro-step-back [{:keys [db] :as cofx}]
   (let  [step (get-in db [:intro-wizard :step])]
-
     (if (< 1 step)
-      (fx/merge {:db (assoc-in db [:intro-wizard :step] (dec step))}
+      (fx/merge {:db (cond-> (assoc-in db [:intro-wizard :step] (dec step))
+                       (#{4 5} step)
+                       (assoc-in [:intro-wizard :key-code] nil)
+                       (= step 5)
+                       (assoc-in [:intro-wizard :confirm-failure?] false))}
                 (navigation/navigate-to-cofx :intro-wizard nil))
 
       (fx/merge {:db (dissoc db :intro-wizard)}
@@ -167,16 +170,14 @@
                     (navigation/navigate-to-cofx :welcome nil))
           (= step 1)
           {:db (assoc-in db [:intro-wizard :generating-keys?] true)
-           #_:dispatch-later #_[{:dispatch [:intro-wizard/generate-keys]
-                                 :ms 3000}]
            :intro-wizard/new-onboarding {:n 5 :mnemonic-length 12}}
 
           (= step 4)
           {:db (-> db
                    (assoc-in [:intro-wizard :stored-key-code] (get-in db [:intro-wizard :key-code]))
+                   (assoc-in [:intro-wizard :key-code] nil)
                    (assoc-in [:intro-wizard :step] 5))}
-          :else (fx/merge {:db (assoc-in db [:intro-wizard :step] (inc step))}
-                          (navigation/navigate-to-cofx :intro-wizard nil)))))
+          :else (fx/merge {:db (assoc-in db [:intro-wizard :step] (inc step))} (navigation/navigate-to-cofx :intro-wizard nil)))))
 (re-frame/reg-fx
  :intro-wizard/new-onboarding
  (fn [{:keys [n mnemonic-length]}]
@@ -216,7 +217,19 @@
 
 (fx/defn code-digit-pressed [{:keys [db] :as cofx} digit]
   (log/info "code-digit-pressed" digit)
-  {:db (update-in db [:intro-wizard :key-code] get-new-key-code digit)})
+  (let [new-key-code (get-new-key-code (get-in db [:intro-wizard :key-code]) digit)
+        stored-key-code (get-in db [:intro-wizard :stored-key-code])
+        _ (log/info "new-key-code" new-key-code)
+        step (get-in db [:intro-wizard :step])
+        confirm-failure? (and (= step 5)
+                              (= (count new-key-code) 6)
+                              (not= new-key-code stored-key-code))]
+    (fx/merge {:db (-> db
+                       (assoc-in [:intro-wizard :key-code] new-key-code)
+                       (assoc-in [:intro-wizard :confirm-failure?] confirm-failure?))}
+              (when (and (= (count new-key-code) 6)
+                         (not confirm-failure?))
+                intro-step-forward))))
 ;;;; COFX
 
 (re-frame/reg-cofx

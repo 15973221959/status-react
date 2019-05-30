@@ -20,7 +20,7 @@
             [status-im.ui.screens.privacy-policy.views :as privacy-policy]))
 
 (def margin 24)
-(defn dots-selector [{:keys [on-press n selected]}]
+(defn dots-selector [{:keys [on-press n selected color]}]
   [react/view {:style {:flex-direction :row
                        :justify-content :space-between
                        :align-items :center
@@ -30,7 +30,9 @@
     (for [i (range n)]
       ^{:key i}
       [react/view {:style {:background-color
-                           (if (selected i) colors/blue (colors/alpha colors/blue 0.2))
+                           (if (selected i)
+                             color
+                             (colors/alpha color 0.2))
                            :width 6 :height 6
                            :border-radius 3}}]))])
 (defn intro-viewer [slides window-width]
@@ -69,7 +71,8 @@
            [react/i18n-text {:style styles/wizard-text
                              :key   (:text s)}]])]
        (let [selected (hash-set (/ @scroll-x view-width))]
-         [dots-selector {:selected selected :n (count slides)}])])))
+         [dots-selector {:selected selected :n (count slides)
+                         :color colors/blue}])])))
 
 (defview intro []
   (letsubs [;{window-width :width window-height :height} [:dimensions/window]
@@ -180,14 +183,23 @@
         _ (log/info "key-code" key-code)]
     [react/view
      [react/view {:style {:margin-bottom 32 :align-items :center}}
-      [dots-selector {:n 6 :selected selected}]]
+      [dots-selector {:n 6 :selected selected :color colors/blue}]]
      [numpad/number-pad {:on-press #(re-frame/dispatch [:intro-wizard/code-digit-pressed %])}]
      [react/text {:style styles/wizard-bottom-note} (i18n/label :t/you-will-need-this-code)]]))
 
-(defn confirm-code []
-  [react/view
-   [numpad/number-pad {:on-press #(re-frame/dispatch [:intro-wizard/code-digit-pressed %])}]
-   [react/text {:style styles/wizard-bottom-note} (i18n/label :t/you-will-need-this-code)]])
+(defn confirm-code [{:keys [key-code confirm-failure?] :as wizard-state}]
+  (log/info "confirm-code" key-code)
+  (let [selected (into (hash-set) (range (count key-code)))
+        _ (log/info "key-code" key-code)]
+    [react/view
+     [react/view {:style {:margin-bottom 32 :align-items :center}}
+      (when confirm-failure?
+        [react/text {:style (assoc styles/wizard-text :color colors/red
+                                   :margin-bottom 16)}
+         (i18n/label :t/passcode-error)])
+      [dots-selector {:n 6 :selected selected :color (if confirm-failure? colors/red colors/blue)}]]
+     [numpad/number-pad {:on-press #(re-frame/dispatch [:intro-wizard/code-digit-pressed %])}]
+     [react/text {:style styles/wizard-bottom-note} (i18n/label :t/you-will-need-this-code)]]))
 
 (defn enable-fingerprint [])
 
@@ -200,10 +212,17 @@
                                     :size      :large}]
          (= step 1)
          [components.common/button {:button-style styles/intro-button
-                              ;:disabled?    disable-button?
+                                    ;:disabled?    disable-button?
                                     :on-press     #(re-frame/dispatch
                                                     [:intro-wizard/step-forward-pressed])
                                     :label        (i18n/label :generate-a-key)}]
+         (#{4 5} step)
+         [react/view (assoc styles/bottom-button-container :align-items :center)
+          [components.common/button {:button-style styles/bottom-button
+                                     :label (i18n/label :t/encrypt-with-password)
+                                     :on-press #(re-frame/dispatch [:intro-wizard/on-encrypt-with-password-pressed])
+                                     :background? false}]]
+
          :else
          [react/view {:style {:flex-direction :row
                               :justify-content :flex-end
