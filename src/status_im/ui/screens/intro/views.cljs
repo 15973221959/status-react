@@ -242,10 +242,12 @@
                        :margin-horizontal 32}}
 
    [react/text {:style styles/wizard-title} (i18n/label (keyword (str "intro-wizard-title" step)))]
-   (cond (= step 3)
+   (cond (#{2 3} step)
          [react/nested-text {:style styles/wizard-text}
           (str (i18n/label (keyword (str "intro-wizard-text" step))) " ")
-          [{:on-press #(re-frame/dispatch [:intro-wizard/on-learn-more-pressed])
+          [{:on-press #(re-frame/dispatch [:bottom-sheet/show-sheet :learn-more
+                                           {:title (i18n/label (if (= step 2) :t/about-names-title :t/about-key-storage-title))
+                                            :content  (i18n/label (if (= step 2) :t/about-names-content :t/about-key-storage-content))}])
             :style {:color colors/blue}}
            (i18n/label :learn-more)]]
          (not= step 5)
