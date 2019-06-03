@@ -11,10 +11,11 @@
             [status-im.chat.models :as chat.models]
             [status-im.constants :as constants]
             [status-im.contact.db :as contact.db]
+            [status-im.ethereum.core :as ethereum]
+            [status-im.ethereum.stateofus :as stateofus]
             [status-im.ethereum.tokens :as tokens]
             [status-im.ethereum.transactions.core :as transactions]
             [status-im.ethereum.transactions.etherscan :as transactions.etherscan]
-            [status-im.ethereum.core :as ethereum]
             [status-im.fleet.core :as fleet]
             [status-im.group-chats.db :as group-chats.db]
             [status-im.i18n :as i18n]
@@ -33,6 +34,7 @@
             [status-im.utils.build :as build]
             [status-im.utils.config :as config]
             [status-im.utils.datetime :as datetime]
+            [status-im.utils.hex :as utils.hex]
             [status-im.utils.identicon :as identicon]
             [status-im.utils.money :as money]
             [status-im.utils.platform :as platform]
@@ -162,6 +164,9 @@
 
 ;;ethereum
 (reg-root-key-sub :ethereum/current-block :ethereum/current-block)
+
+;;ens
+(reg-root-key-sub :ens :ens)
 
 ;;GENERAL ==============================================================================================================
 
@@ -1868,3 +1873,31 @@
                             (or (string/blank? screen-snt-amount)
                                 (#{"0" "0.0" "0.00"} screen-snt-amount)
                                 (string/ends-with? screen-snt-amount ".")))))))))
+
+;;ENS ==================================================================================================================
+
+(re-frame/reg-sub
+ :ens.stateofus/registrar
+ :<- [:account/network]
+ (fn [network]
+   (let [chain (ethereum/network->chain-keyword network)]
+     (get stateofus/registrars chain))))
+
+(re-frame/reg-sub
+ :account/usernames
+ :<- [:account/account]
+ (fn [acc]
+   (:usernames acc)))
+
+(re-frame/reg-sub
+ :ens.registration/screen
+ :<- [:ens]
+ :<- [:ens.stateofus/registrar]
+ :<- [:account/account]
+ (fn [[{:keys [state username custom-domain?]} registrar {:keys [address public-key]}]]
+   {:state          state
+    :username       username
+    :custom-domain? (or custom-domain? false)
+    :contract       registrar
+    :address        address
+    :public-key     public-key}))
