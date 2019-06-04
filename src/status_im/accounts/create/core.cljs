@@ -17,6 +17,7 @@
             [status-im.utils.identicon :as identicon]
             [status-im.utils.signing-phrase.core :as signing-phrase]
             [status-im.utils.types :as types]
+            [status-im.utils.utils :as utils]
             [taoensso.timbre :as log]
             [status-im.utils.fx :as fx]
             [status-im.node.core :as node]
@@ -155,6 +156,8 @@
       (fx/merge {:db (cond-> (assoc-in db [:intro-wizard :step] (dec step))
                        (#{4 5} step)
                        (assoc-in [:intro-wizard :key-code] nil)
+                       (= step 4)
+                       (assoc-in [:intro-wizard :encrypt-with-password?] false)
                        (= step 5)
                        (assoc-in [:intro-wizard :confirm-failure?] false))}
                 (navigation/navigate-to-cofx :intro-wizard nil))
@@ -162,7 +165,7 @@
       (fx/merge {:db (dissoc db :intro-wizard)}
                 (navigation/navigate-to-clean :intro nil)))))
 
-(fx/defn intro-step-forward [{:keys [db] :as cofx}]
+(fx/defn intro-step-forward [{:keys [db] :as cofx} {:keys [skip?] :as opts}]
   (let  [step (get-in db [:intro-wizard :step])]
 
     (cond (= step 7)
@@ -177,7 +180,9 @@
                    (assoc-in [:intro-wizard :stored-key-code] (get-in db [:intro-wizard :key-code]))
                    (assoc-in [:intro-wizard :key-code] nil)
                    (assoc-in [:intro-wizard :step] 5))}
-          :else (fx/merge {:db (assoc-in db [:intro-wizard :step] (inc step))} (navigation/navigate-to-cofx :intro-wizard nil)))))
+          :else (fx/merge {:db (assoc-in db [:intro-wizard :step]
+                                         (inc step))}
+                          (navigation/navigate-to-cofx :intro-wizard nil)))))
 (re-frame/reg-fx
  :intro-wizard/new-onboarding
  (fn [{:keys [n mnemonic-length]}]
@@ -205,6 +210,9 @@
   (log/info "#on-key-storage-selected" storage-type)
   {:db (assoc-in db [:intro-wizard :selected-storage-type] storage-type)})
 
+(fx/defn on-encrypt-with-password-pressed [{:keys [db] :as cofx}]
+  {:db (assoc-in db [:intro-wizard :encrypt-with-password?] true)})
+
 (fx/defn on-learn-more-pressed [{:keys [db] :as cofx}]
   {:db (assoc-in db [:intro-wizard :show-learn-more?] true)})
 
@@ -224,12 +232,18 @@
         confirm-failure? (and (= step 5)
                               (= (count new-key-code) 6)
                               (not= new-key-code stored-key-code))]
+    (when confirm-failure?
+      (utils/vibrate))
     (fx/merge {:db (-> db
                        (assoc-in [:intro-wizard :key-code] new-key-code)
                        (assoc-in [:intro-wizard :confirm-failure?] confirm-failure?))}
               (when (and (= (count new-key-code) 6)
                          (not confirm-failure?))
-                intro-step-forward))))
+                (intro-step-forward {})))))
+
+(fx/defn password-symbol-pressed [{:keys [db] :as cofx} symbol]
+  {:db (update-in db [:intro-wizard :password] str symbol)})
+
 ;;;; COFX
 
 (re-frame/reg-cofx

@@ -27,11 +27,11 @@
    :min-height    292
    :max-height    328})
 
-(def number-container
+(defn number-container [hide-container?]
   {:width            64
    :height           64
    :border-radius    32
    :justify-content  :center
    :align-items      :center
-   :background-color colors/blue-light})
+   :background-color (if hide-container? colors/white colors/blue-light)})
 
