@@ -49,13 +49,22 @@ def prep(type = 'nightly') {
     nix.shell 'bundle install --gemfile=fastlane/Gemfile --quiet'
   }
 
-  def prepareTarget=env.TARGET_OS
   if (env.TARGET_OS == 'macos' || env.TARGET_OS == 'linux' || env.TARGET_OS == 'windows') {
-    prepareTarget='desktop'
+    /* node deps, pods, and status-go download */
+    utils.nix.shell("scripts/prepare-for-desktop-platform.sh", pure: false)
+    sh('''
+      cp -R translations/ status-modules/translations/ && \
+      cp -R status-modules/ node_modules/status-modules/
+    ''')
+  } else {
+    // run script in the nix shell so that node_modules gets instantiated before attempting the copies
+    utils.nix.shell('''
+      cp -R translations/ status-modules/translations/ && \
+      chmod u+w node_modules && \
+      cp -R status-modules/ node_modules/status-modules/ && \
+      chmod u-w node_modules
+    ''')
   }
-  /* node deps, pods, and status-go download */
-  utils.nix.shell("scripts/prepare-for-platform.sh ${prepareTarget}", pure: false)
-  sh("cp -R translations status-modules/translations && cp -R status-modules node_modules/status-modules")
 }
 
 return this

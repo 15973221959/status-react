@@ -15,6 +15,7 @@ let
   yarn' = pkgs.yarn.override { nodejs = nodejs'; };
   nodePkgBuildInputs = [
     nodejs'
+    pkgs.nodePackages_10_x.react-native-cli
     pkgs.python27 # for e.g. gyp
     yarn'
   ];

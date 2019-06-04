@@ -73,27 +73,34 @@ let
     });
   };
 
-  buildInputs = if target-os == "android" then [ status-go-packages.android ] else
-                if target-os == "ios" then [ status-go-packages.ios ] else
+  buildInputs = if target-os == "android" then buildInputs-android else
+                if target-os == "ios" then buildInputs-ios else
                 if target-os == "all" then currentHostConfig.allTargets else
-                if platform.targetDesktop then [ status-go-packages.desktop ] else
+                if platform.targetDesktop then buildInputs-desktop else
                 throw "Unexpected target platform ${target-os}";
-
-in {
-  inherit buildInputs;
-
-  shellHook =
-    lib.optionalString platform.targetIOS ''
-      # These variables are used by the iOS build preparation section in scripts/prepare-for-platform.sh
-      export RCTSTATUS_FILEPATH=${status-go-packages.ios}/lib/Statusgo.framework
-    '' +
+  buildInputs-android = lib.optional platform.targetAndroid [ status-go-packages.android ];
+  buildInputs-ios = lib.optional platform.targetIOS [ status-go-packages.ios ];
+  buildInputs-desktop = lib.optional platform.targetDesktop [ status-go-packages.desktop ];
+  shellHook-android =
     lib.optionalString platform.targetAndroid ''
       # These variables are used by the Status Android Gradle build script in android/build.gradle
       export STATUS_GO_ANDROID_LIBDIR=${status-go-packages.android}/lib
-    '' +
+    '';
+  shellHook-ios =
+    lib.optionalString platform.targetIOS ''
+      # These variables are used by the iOS build preparation section in nix/mobile/ios/default.nix
+      export RCTSTATUS_FILEPATH=${status-go-packages.ios}/lib/Statusgo.framework
+    '';
+  shellHook-desktop =
     lib.optionalString platform.targetDesktop ''
       # These variables are used by the Status Desktop CMake build script in modules/react-native-status/desktop/CMakeLists.txt
       export STATUS_GO_DESKTOP_INCLUDEDIR=${status-go-packages.desktop}/include
       export STATUS_GO_DESKTOP_LIBDIR=${status-go-packages.desktop}/lib
     '';
+
+in {
+  inherit buildInputs buildInputs-android buildInputs-ios buildInputs-desktop
+          shellHook-android shellHook-ios shellHook-desktop;
+
+  shellHook = shellHook-ios + shellHook-android + shellHook-desktop;
 }

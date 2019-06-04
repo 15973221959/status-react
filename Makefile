@@ -41,7 +41,7 @@ endif
 
 clean: SHELL := /bin/sh
 clean: ##@prepare Remove all output folders
-	git clean -dxf -f
+	@test -d node_modules && chmod -R 744 node_modules; test -d node_modules.tmp && chmod -R 744 node_modules.tmp; git clean -dxf -f
 
 clean-nix: SHELL := /bin/sh
 clean-nix: ##@prepare Remove complete nix setup
@@ -64,52 +64,63 @@ release: release-android release-ios ##@build build release for Android and iOS
 
 release-android: export TARGET_OS ?= android
 release-android: ##@build build release for Android
-	@$(MAKE) prod-build-android && \
-	cp -R translations status-modules/translations && \
-	cp -R status-modules node_modules/status-modules && \
+	@git clean -dxf -f target/android && \
+	$(MAKE) prod-build-android && \
+	cp -R translations/ status-modules/ && \
+	chmod u+w node_modules && \
+	cp -R status-modules/ node_modules/ && \
+	chmod u-w node_modules && \
 	react-native run-android --variant=release
 
 release-ios: export TARGET_OS ?= ios
 release-ios: ##@build build release for iOS release
 	# Open XCode inside the Nix context
-	@$(MAKE) prod-build-ios && \
+	@git clean -dxf -f target/ios && \
+	$(MAKE) prod-build-ios && \
 	echo "Build in XCode, see https://status.im/build_status/ for instructions" && \
-	cp -R translations status-modules/translations && \
-	cp -R status-modules node_modules/status-modules && \
+	cp -R translations/ status-modules/ && \
+	chmod u+w node_modules && \
+	cp -R status-modules/ node_modules/ && \
+	chmod u-w node_modules && \
 	open ios/StatusIm.xcworkspace
 
 release-desktop: export TARGET_OS ?= $(HOST_OS)
 release-desktop: ##@build build release for desktop release
 	@$(MAKE) prod-build-desktop && \
-	cp -R translations status-modules/translations && \
-	cp -R status-modules node_modules/status-modules && \
+	cp -R translations/ status-modules/ && \
+	cp -R status-modules/ node_modules/ && \
 	scripts/build-desktop.sh
 
 release-windows-desktop: export TARGET_OS ?= windows
 release-windows-desktop: ##@build build release for desktop release
 	@$(MAKE) prod-build-desktop && \
-	cp -R translations status-modules/translations && \
-	cp -R status-modules node_modules/status-modules && \
+	cp -R translations/ status-modules/ && \
+	cp -R status-modules/ node_modules/ && \
 	scripts/build-desktop.sh
 
 prod-build: export TARGET_OS ?= all
 prod-build:
-	scripts/prepare-for-platform.sh android && \
-	scripts/prepare-for-platform.sh ios && \
-	lein prod-build
+	lein prod-build && \
+	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.android.js && \
+	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.ios.js
 
 prod-build-android: export TARGET_OS ?= android
 prod-build-android:
-	lein prod-build-android
+	@git clean -dxf -f android/app ./index.$(TARGET_OS).js && \
+	lein prod-build-android && \
+	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.$(TARGET_OS).js
 
 prod-build-ios: export TARGET_OS ?= ios
 prod-build-ios:
-	lein prod-build-ios
+	@git clean -dxf -f ios ./index.$(TARGET_OS).js && \
+	lein prod-build-ios && \
+	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.$(TARGET_OS).js
 
 prod-build-desktop: export TARGET_OS ?= $(HOST_OS)
 prod-build-desktop:
-	git clean -qdxf -f ./index.desktop.js desktop/ && \
-	lein prod-build-desktop
+	@git clean -qdxf -f ./index.desktop.js desktop/ && \
+	lein prod-build-desktop && \
+	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.desktop.js
 
 #--------------
 # REPL
