@@ -9,7 +9,6 @@
             [status-im.utils.config :as config]
             [status-im.utils.platform :as utils.platform]
             [status-im.chat.models :as models.chat]
-            [status-im.transport.message.public-chat :as transport.public-chat]
             [status-im.accounts.db :as accounts.db]
             [status-im.transport.message.protocol :as protocol]
             [status-im.transport.utils :as transport.utils]
@@ -17,7 +16,7 @@
             [status-im.native-module.core :as native-module]
             [status-im.utils.identicon :as identicon]
             [status-im.contact.core :as contact]
-            [status-im.contact-code.core :as contact-code]
+            [status-im.transport.filters.core :as transport.filters]
             [status-im.data-store.contacts :as data-store.contacts]
             [status-im.data-store.accounts :as data-store.accounts]
             [status-im.transport.message.pairing :as transport.pairing]))
@@ -219,7 +218,6 @@
      [{:web3    web3
        :src     current-public-key
        :dst     current-public-key
-       :topics  (get-in cofx [:db :mailserver/topics])
        :payload payload}]}))
 
 (fx/defn send-installation-message-fx [cofx payload]
