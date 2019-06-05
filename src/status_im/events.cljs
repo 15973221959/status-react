@@ -289,9 +289,9 @@
    (accounts.create/intro-step-forward cofx opts)))
 
 (handlers/register-handler-fx
- :intro-wizard/code-digit-pressed
- (fn [cofx [_ digit]]
-   (accounts.create/code-digit-pressed cofx digit)))
+ :intro-wizard/code-symbol-pressed
+ (fn [cofx [_ sym]]
+   (accounts.create/code-symbol-pressed cofx sym)))
 
 (handlers/register-handler-fx
  :intro-wizard/on-keys-generated
@@ -318,10 +318,6 @@
  (fn [cofx _]
    (accounts.create/on-encrypt-with-password-pressed cofx)))
 
-(handlers/register-handler-fx
- :intro-wizard/password-symbol-pressed
- (fn [cofx [_ symbol]]
-   (accounts.create/password-symbol-pressed cofx symbol)))
 ;; accounts recover module
 
 (handlers/register-handler-fx

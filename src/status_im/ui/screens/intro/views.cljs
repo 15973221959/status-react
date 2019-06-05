@@ -176,33 +176,44 @@
 (defn create-code [{:keys [key-code encrypt-with-password?] :as wizard-state}]
   (let [selected (into (hash-set) (range (count key-code)))]
     (if encrypt-with-password?
-      [react/view
+      [react/view {:style {:align-items :center :justify-content :center}}
        [react/text-input {:secure-text-entry true
+                          :placeholder ""
                           :style {:font-size 20
                                   :line-height 24
                                   :font-weight "600"}
-                          :on-key-press #(re-frame/dispatch [:intro-wizard/password-symbol-pressed (-> % :nativeEvent :key)])}]
+                          :on-key-press #(re-frame/dispatch [:intro-wizard/code-symbol-pressed (-> % :nativeEvent :key)])}]
        [react/text {:style styles/wizard-bottom-note} (i18n/label :t/password-description)]]
       [react/view
        [react/view {:style {:margin-bottom 32 :align-items :center}}
         [dots-selector {:n 6 :selected selected :color colors/blue}]]
-       [numpad/number-pad {:on-press #(re-frame/dispatch [:intro-wizard/code-digit-pressed %])
+       [numpad/number-pad {:on-press #(re-frame/dispatch [:intro-wizard/code-symbol-pressed %])
                            :hide-dot? true}]
        [react/text {:style styles/wizard-bottom-note} (i18n/label :t/you-will-need-this-code)]])))
 
-(defn confirm-code [{:keys [key-code confirm-failure?] :as wizard-state}]
-  (log/info "confirm-code" key-code)
+(defn confirm-code [{:keys [key-code confirm-failure? encrypt-with-password?] :as wizard-state}]
+  (log/info "confirm-code" key-code encrypt-with-password?)
   (let [selected (into (hash-set) (range (count key-code)))
         _ (log/info "key-code" key-code)]
-    [react/view
-     [react/view {:style {:margin-bottom 32 :align-items :center}}
-      (when confirm-failure?
-        [react/text {:style (assoc styles/wizard-text :color colors/red
-                                   :margin-bottom 16)}
-         (i18n/label :t/passcode-error)])
-      [dots-selector {:n 6 :selected selected :color (if confirm-failure? colors/red colors/blue)}]]
-     [numpad/number-pad {:on-press #(re-frame/dispatch [:intro-wizard/code-digit-pressed %])}]
-     [react/text {:style styles/wizard-bottom-note} (i18n/label :t/you-will-need-this-code)]]))
+    (if encrypt-with-password?
+      [react/view {:style {:align-items :center :justify-content :center}}
+       [react/text-input {:secure-text-entry true
+                          :placeholder ""
+                          :style {:font-size 20
+                                  :line-height 24
+                                  :font-weight "600"}
+                          :on-key-press #(re-frame/dispatch [:intro-wizard/code-symbol-pressed (-> % :nativeEvent :key)])}]
+       [react/text {:style styles/wizard-bottom-note} (i18n/label :t/password-description)]]
+
+      [react/view
+       [react/view {:style {:margin-bottom 32 :align-items :center}}
+        (when confirm-failure?
+          [react/text {:style (assoc styles/wizard-text :color colors/red
+                                     :margin-bottom 16)}
+           (i18n/label :t/passcode-error)])
+        [dots-selector {:n 6 :selected selected :color (if confirm-failure? colors/red colors/blue)}]]
+       [numpad/number-pad {:on-press #(re-frame/dispatch [:intro-wizard/code-symbol-pressed %])}]
+       [react/text {:style styles/wizard-bottom-note} (i18n/label :t/you-will-need-this-code)]])))
 
 (defn enable-fingerprint []
   [vector-icons/icon :main-icons/fingerprint {:container-style {:align-items :center  :justify-content :center}
@@ -247,7 +258,9 @@
                                                             [:intro-wizard/step-forward-pressed])
                                             :forward? true}]])
    (when (#{1 6 7} step)
-     [react/text (cond-> {:style styles/wizard-bottom-note}
+     [react/text (cond-> {:style (cond-> styles/wizard-bottom-note
+                                   (#{6 7} step)
+                                   (assoc :color colors/blue))}
                    (#{6 7} step)
                    (assoc :on-press     #(re-frame/dispatch
                                           [:intro-wizard/step-forward-pressed {:skip? true}])))
@@ -279,8 +292,8 @@
   (letsubs [{:keys [step generating-keys?] :as wizard-state} [:intro-wizard]]
     [react/view {:style {:flex 1}}
      [toolbar/toolbar
-      nil
-      (when-not (= :finish step)
+      {:style {:border-bottom-width 0}}
+      (when-not (#{6 7} step)
         (toolbar/nav-button
          (actions/back #(re-frame/dispatch
                          [:intro-wizard/step-back-pressed]))))

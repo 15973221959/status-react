@@ -175,6 +175,11 @@
           {:db (assoc-in db [:intro-wizard :generating-keys?] true)
            :intro-wizard/new-onboarding {:n 5 :mnemonic-length 12}}
 
+          (and (= step 5)
+               (get-in db [:intro-wizard :encrypt-with-password?])
+               (not= (get-in db [:intro-wizard :stored-key-code]) (get-in db [:intro-wizard :key-code])))
+          {:db (assoc-in db [:intro-wizard :confirm-failure?] true)}
+
           (= step 4)
           {:db (-> db
                    (assoc-in [:intro-wizard :stored-key-code] (get-in db [:intro-wizard :key-code]))
@@ -216,20 +221,22 @@
 (fx/defn on-learn-more-pressed [{:keys [db] :as cofx}]
   {:db (assoc-in db [:intro-wizard :show-learn-more?] true)})
 
-(defn get-new-key-code [current-code digit]
-  (cond (= digit :remove)
+(defn get-new-key-code [current-code sym encrypt-with-password?]
+  (cond (= sym :remove)
         (subs current-code 0 (dec (count current-code)))
-        (= (count current-code) 6)
+        (and (not encrypt-with-password?) (= (count current-code) 6))
         current-code
-        :else (str current-code digit)))
+        :else (str current-code sym)))
 
-(fx/defn code-digit-pressed [{:keys [db] :as cofx} digit]
-  (log/info "code-digit-pressed" digit)
-  (let [new-key-code (get-new-key-code (get-in db [:intro-wizard :key-code]) digit)
+(fx/defn code-symbol-pressed [{:keys [db] :as cofx} sym]
+  (log/info "code-symbol-pressed" sym)
+  (let [encrypt-with-password? (get-in db [:intro-wizard :encrypt-with-password?])
+        new-key-code (get-new-key-code (get-in db [:intro-wizard :key-code]) sym encrypt-with-password?)
         stored-key-code (get-in db [:intro-wizard :stored-key-code])
         _ (log/info "new-key-code" new-key-code)
         step (get-in db [:intro-wizard :step])
         confirm-failure? (and (= step 5)
+                              (not encrypt-with-password?)
                               (= (count new-key-code) 6)
                               (not= new-key-code stored-key-code))]
     (when confirm-failure?
@@ -237,12 +244,10 @@
     (fx/merge {:db (-> db
                        (assoc-in [:intro-wizard :key-code] new-key-code)
                        (assoc-in [:intro-wizard :confirm-failure?] confirm-failure?))}
-              (when (and (= (count new-key-code) 6)
+              (when (and (not encrypt-with-password?)
+                         (= (count new-key-code) 6)
                          (not confirm-failure?))
                 (intro-step-forward {})))))
-
-(fx/defn password-symbol-pressed [{:keys [db] :as cofx} symbol]
-  {:db (update-in db [:intro-wizard :password] str symbol)})
 
 ;;;; COFX
 
