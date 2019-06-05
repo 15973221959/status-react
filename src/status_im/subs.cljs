@@ -1886,8 +1886,8 @@
 (re-frame/reg-sub
  :account/usernames
  :<- [:account/account]
- (fn [acc]
-   (:usernames acc)))
+ (fn [account]
+   (:usernames account)))
 
 (re-frame/reg-sub
  :ens.registration/screen

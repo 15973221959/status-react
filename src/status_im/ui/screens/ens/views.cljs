@@ -35,15 +35,17 @@
   [react/view {:style {:margin-horizontal 16 :align-items :flex-start}}
    [react/text {:style {:color colors/gray :font-size 15}}
     title]
-   [react/view {:margin-top 8 :padding-horizontal 16 :padding-vertical 12 :border-width 1 :border-radius 12 :border-color colors/gray-light}
+   [react/view {:margin-top 8 :padding-horizontal 16 :padding-vertical 12 :border-width 1 :border-radius 12
+                :border-color colors/gray-light}
     [react/text {:style {:font-size 15}}
      content]]])
 
 ;; Username
 
 (views/defview username []
-  (views/letsubs [{:keys [username address public-key]} [:ens.registration/screen]]
+  (views/letsubs [{:keys [username address public-key] :as m} [:ens.registration/screen]]
     [react/view {:style {:flex 1}}
+     (println "!!" m)
      [toolbar/simple-toolbar
       username]
      [react/scroll-view {:style {:flex 1}}
@@ -143,8 +145,8 @@
     :else                    :main-icons/username))
 
 (defn- icon-wrapper [color icon]
-  [react/view {:style {:margin-right 10 :width 32 :height 32 :border-radius 25 :align-items :center :justify-content :center
-                       :background-color color}}
+  [react/view {:style {:margin-right 10 :width 32 :height 32 :border-radius 25
+                       :align-items :center :justify-content :center :background-color color}}
    icon])
 
 (defn- full-username [{:keys [custom-domain? username]}]
@@ -221,7 +223,7 @@
   (re-frame/dispatch [:ens/set-username custom-domain? username]))
 
 (defn- on-registration [props]
-  (re-frame/dispatch [:ens/register props]))
+  (re-frame/dispatch [:ens/register (assoc props :full-username (full-username props))]))
 
 (defn- agreement [{:keys [checked contract]}]
   [react/view {:flex-direction :row :margin-left 6 :margin-top 14 :align-items :center}
@@ -268,7 +270,8 @@
 ;; states: initial, typing, (invalid, unregistrable, registrable, owned, connected), registering (from registrable), (saved, registered, registration-failed)
 
 (defn- icon [{:keys [state]}]
-  [react/view {:style {:margin-top 68 :margin-bottom 24  :width 60 :height 60 :border-radius 30 :background-color colors/blue :align-items :center :justify-content :center}}
+  [react/view {:style {:margin-top 68 :margin-bottom 24  :width 60 :height 60 :border-radius 30
+                       :background-color colors/blue :align-items :center :justify-content :center}}
    [vector-icons/icon (main-icon state) {:color colors/white}]])
 
 (defn- username-input [{:keys [username custom-domain? state] :as props} usernames]
@@ -280,7 +283,8 @@
                       :default-value     username
                       :auto-focus        true
                       :placeholder       (default-name custom-domain?)
-                      :style             {:flex 1 (if (= state :registering) :padding-horizontal :padding-left) 48 :text-align :center :font-size 22}}]
+                      :style             {:flex 1 (if (= state :registering) :padding-horizontal :padding-left) 48
+                                          :text-align :center :font-size 22}}]
    [input-icon props usernames]])
 
 (defn- final-state-label [state]
@@ -315,9 +319,11 @@
 (defn- finalized-icon [{:keys [state]}]
   (case state
     :registration-failed
-    [react/view {:style {:width 40 :height 40 :border-radius 30 :background-color colors/red-light :align-items :center :justify-content :center}}
+    [react/view {:style {:width 40 :height 40 :border-radius 30 :background-color colors/red-light
+                         :align-items :center :justify-content :center}}
      [vector-icons/icon :main-icons/warning {:color colors/red}]]
-    [react/view {:style {:width 40 :height 40 :border-radius 30 :background-color colors/gray-lighter :align-items :center :justify-content :center}}
+    [react/view {:style {:width 40 :height 40 :border-radius 30 :background-color colors/gray-lighter
+                         :align-items :center :justify-content :center}}
      [vector-icons/icon :main-icons/check {:color colors/blue}]]))
 
 (defn- registration-finalized [{:keys [state] :as props}]
@@ -345,7 +351,9 @@
        [react/view {:style {:flex 1 :align-items :center :justify-content :center}}
         [icon props]
         [username-input props usernames]
-        [react/view {:style {:height 36 :align-items :center :justify-content :space-between :padding-horizontal 12 :margin-top 24 :margin-horizontal 16 :border-color colors/gray-lighter :border-radius 20 :border-width 1 :flex-direction :row}}
+        [react/view {:style {:height 36 :align-items :center :justify-content :space-between :padding-horizontal 12
+                             :margin-top 24 :margin-horizontal 16 :border-color colors/gray-lighter :border-radius 20
+                             :border-width 1 :flex-direction :row}}
          [react/text {:style {:font-size 12}}
           (domain-label custom-domain?)]
          [react/view {:flex 1 :min-width 24}]
@@ -380,7 +388,8 @@
 
 (defn- welcome-item [{:keys [icon-label title]} content]
   [react/view {:style {:flex 1 :margin-top 24 :margin-left 16 :flex-direction :row}}
-   [react/view {:style {:height 40 :width 40 :border-radius 25 :border-width 1 :border-color colors/gray-lighter :align-items :center :justify-content :center}}
+   [react/view {:style {:height 40 :width 40 :border-radius 25 :border-width 1 :border-color colors/gray-lighter
+                        :align-items :center :justify-content :center}}
     [react/text {:style {:typography :header}}
      icon-label]]
    [react/view {:style {:flex 1 :margin-horizontal 16}}
@@ -395,7 +404,8 @@
                   :style  {:margin-top 32}}]
     [react/text {:style {:margin-top 32 :margin-bottom 8 :typography :header}}
      (i18n/label :t/ens-get-name)]
-    [react/text {:style {:margin-top 8 :margin-bottom 24 :color colors/gray :font-size 15 :margin-horizontal 16 :text-align :center}}
+    [react/text {:style {:margin-top 8 :margin-bottom 24 :color colors/gray :font-size 15 :margin-horizontal 16
+                         :text-align :center}}
      (i18n/label :t/ens-welcome-hints)]
     [welcome-item {:icon-label "1" :title (i18n/label :t/ens-welcome-point-1-title)}
      [react/view {:flex-direction :row}
@@ -415,7 +425,8 @@
       (i18n/label :t/ens-welcome-point-4)]]
     [react/text {:style {:margin-top 16 :text-align :center :color colors/gray :typography :caption :padding-bottom 96}}
      (i18n/label :t/ens-powered-by)]]
-   [react/view {:align-items :center :padding-top 8 :padding-bottom 16 :background-color colors/white :position :absolute :left 0 :right 0 :bottom 0
+   [react/view {:align-items :center :padding-top 8 :padding-bottom 16 :background-color colors/white
+                :position :absolute :left 0 :right 0 :bottom 0
                 :border-top-width 1 :border-top-color colors/gray-lighter}
     [components.common/button {:on-press #(re-frame/dispatch [:navigate-to :ens-register])
                                :label    (i18n/label :t/get-started)}]]])

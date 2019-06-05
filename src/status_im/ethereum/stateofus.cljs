@@ -20,6 +20,6 @@
 
 (defn valid-username? [username]
   (boolean
-   (and (< 4 (count username))
+   (and (< 3 (count username))
         (lower-case? username)
         (re-find #"^[a-z0-9]+$" username))))
