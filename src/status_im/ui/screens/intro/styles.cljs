@@ -18,13 +18,6 @@
   {:align-items :center
    :margin-top  42})
 
-(def intro-button
-  {:margin-vertical    8
-   :padding-horizontal 24
-   :align-self         :center
-   :justify-content    :center
-   :align-items        :center})
-
 (def wizard-title
   {:font-size 22
    :line-height 28
@@ -38,16 +31,6 @@
    :color colors/gray
    :text-align :center})
 
-(def account-name
-  {:font-size 15
-   :line-height 22
-   :font-weight "500"})
-
-(def account-address
-  {:font-size 15
-   :line-height 22
-   :color colors/gray})
-
 (def welcome-text
   {:typography  :header
    :margin-top  32
@@ -58,13 +41,6 @@
    :line-height 14
    :color       colors/gray
    :text-align  :center})
-
-(def wizard-bottom-note
-  {:font-size 15
-   :line-height 22
-   :margin-top 20
-   :color colors/gray
-   :text-align :center})
 
 (def welcome-text-description
   {:margin-top        8
@@ -93,6 +69,8 @@
 
 (def bottom-button
   {:padding-horizontal 24
+   :justify-content :center
+   :align-items :center
    :flex-direction :row})
 
 (def bottom-button-container
