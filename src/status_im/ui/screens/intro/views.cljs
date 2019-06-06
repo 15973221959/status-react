@@ -19,24 +19,16 @@
             [status-im.ui.components.status-bar.view :as status-bar]
             [status-im.ui.screens.privacy-policy.views :as privacy-policy]))
 
-(def margin 24)
 (defn dots-selector [{:keys [on-press n selected color]}]
-  [react/view {:style {:flex-direction :row
-                       :justify-content :space-between
-                       :align-items :center
-                       :height 6
-                       :width (+ 6 (* (+ 6 10) (dec n)))}}
+  [react/view {:style (styles/dot-selector n)}
    (doall
     (for [i (range n)]
       ^{:key i}
-      [react/view {:style {:background-color
-                           (if (selected i)
-                             color
-                             (colors/alpha color 0.2))
-                           :width 6 :height 6
-                           :border-radius 3}}]))])
+      [react/view {:style (styles/dot color (selected i))}]))])
+
 (defn intro-viewer [slides window-width]
-  (let [view-width  (- window-width (* 2 margin))
+  (let [margin 24
+        view-width  (- window-width (* 2 margin))
         scroll-x (r/atom 0)
         scroll-view-ref (atom nil)
         max-width (* view-width (dec (count slides)))]
@@ -113,18 +105,10 @@
        ^{:key (:pubkey acc)}
        [react/touchable-highlight
         {:on-press #(re-frame/dispatch [:intro-wizard/on-key-selected (:pubkey acc)])}
-        [react/view {:style {:flex-direction :row
-                             :align-items :center
-                             :padding-left 16
-                             :padding-right 10
-                             :background-color (if selected? colors/blue-light colors/white)
-                             :padding-vertical 10}}
+        [react/view {:style (styles/list-item selected?)}
 
          [react/image {:source {:uri (identicon/identicon (:pubkey acc))}
-                       :style {:width 40 :height 40
-                               :border-radius 20
-                               :border-width 1
-                               :border-color (colors/alpha colors/black 0.1)}}]
+                       :style styles/account-image}]
          [react/view {:style {:margin-horizontal 16 :flex 1}}
           [react/view {:style {:justify-content :center}}
            [react/text {:style (assoc styles/wizard-text :text-align :left
@@ -159,13 +143,10 @@
            (i18n/label type)]
           [react/touchable-highlight
            {:on-press #(re-frame/dispatch [:intro-wizard/on-key-storage-selected type])}
-           [react/view {:style {:flex-direction :row
-                                :align-items :flex-start
-                                :padding-left 16
-                                :padding-right 10
-                                :margin-bottom 30
-                                :background-color (if selected? colors/blue-light colors/white)
-                                :padding-vertical 16}}
+           [react/view {:style (assoc (styles/list-item selected?)
+                                      :align-items :flex-start
+                                      :margin-bottom 30
+                                      :padding-vertical 16)}
             [vector-icons/icon icon {:color (if selected? colors/blue colors/gray)}]
             [react/view {:style {:margin-horizontal 16 :flex 1}}
              [react/text {:style (assoc styles/wizard-text :font-weight "500" :color colors/black :text-align :left)}
@@ -174,52 +155,39 @@
               (i18n/label desc)]]
             [radio/radio selected?]]]]))]))
 
-(defn create-code [{:keys [key-code encrypt-with-password?] :as wizard-state}]
+(defn numpad-container [key-code confirm-failure?]
   (let [selected (into (hash-set) (range (count key-code)))]
-    (if encrypt-with-password?
-      [react/view {:style {:flex 1 :align-items :center :justify-content :space-between}}
-       [react/text-input {:secure-text-entry true
-                          :auto-focus true
-                          :placeholder ""
-                          :style {:font-size 20
-                                  :margin-top 60
-                                  :line-height 24
-                                  :font-weight "600"}
-                          :on-key-press #(re-frame/dispatch [:intro-wizard/code-symbol-pressed (-> % :nativeEvent :key)])}]
-       [react/text {:style (assoc styles/wizard-text :margin-bottom 16)} (i18n/label :t/password-description)]]
-      [react/view
-       [react/view {:style {:margin-bottom 32 :align-items :center}}
-        [dots-selector {:n 6 :selected selected :color colors/blue}]]
-       [numpad/number-pad {:on-press #(re-frame/dispatch [:intro-wizard/code-symbol-pressed %])
-                           :hide-dot? true}]
-       [react/text {:style (assoc styles/wizard-text :margin-top 32)} (i18n/label :t/you-will-need-this-code)]])))
+    [react/view
+     [react/view {:style {:margin-bottom 32 :align-items :center}}
+      [react/text {:style (assoc styles/wizard-text :color colors/red
+                                 :margin-bottom 16)}
+       (if confirm-failure? (i18n/label :t/passcode-error) " ")]
+      [dots-selector {:n 6 :selected selected :color (if confirm-failure? colors/red colors/blue)}]]
+     [numpad/number-pad {:on-press #(re-frame/dispatch [:intro-wizard/code-symbol-pressed %])
+                         :hide-dot? true}]
+     [react/text {:style (assoc styles/wizard-text :margin-top 32)} (i18n/label :t/you-will-need-this-code)]]))
+
+(defn create-code [{:keys [key-code encrypt-with-password?] :as wizard-state}]
+  (if encrypt-with-password?
+    [react/view {:style {:flex 1 :align-items :center :justify-content :space-between}}
+     [react/text-input {:secure-text-entry true
+                        :auto-focus true
+                        :placeholder ""
+                        :style styles/password-text-input
+                        :on-key-press #(re-frame/dispatch [:intro-wizard/code-symbol-pressed (-> % :nativeEvent :key)])}]
+     [react/text {:style (assoc styles/wizard-text :margin-bottom 16)} (i18n/label :t/password-description)]]
+    [numpad-container key-code false]))
 
 (defn confirm-code [{:keys [key-code confirm-failure? encrypt-with-password?] :as wizard-state}]
-  (log/info "confirm-code" key-code encrypt-with-password?)
-  (let [selected (into (hash-set) (range (count key-code)))
-        _ (log/info "key-code" key-code)]
-    (if encrypt-with-password?
-      [react/view {:style {:flex 1 :align-items :center :justify-content :space-between}}
-       [react/text-input {:secure-text-entry true
-                          :auto-focus true
-                          :placeholder ""
-                          :style {:font-size 20
-                                  :margin-top 60
-                                  :line-height 24
-                                  :font-weight "600"}
-                          :on-key-press #(re-frame/dispatch [:intro-wizard/code-symbol-pressed (-> % :nativeEvent :key)])}]
-       [react/text {:style  (assoc styles/wizard-text :margin-bottom 16)} (i18n/label :t/password-description)]]
-
-      [react/view
-       [react/view {:style {:margin-bottom 32 :align-items :center}}
-        (when confirm-failure?
-          [react/text {:style (assoc styles/wizard-text :color colors/red
-                                     :margin-bottom 16)}
-           (i18n/label :t/passcode-error)])
-        [dots-selector {:n 6 :selected selected :color (if confirm-failure? colors/red colors/blue)}]]
-       [numpad/number-pad {:on-press #(re-frame/dispatch [:intro-wizard/code-symbol-pressed %])
-                           :hide-dot? true}]
-       [react/text {:style styles/wizard-text} (i18n/label :t/you-will-need-this-code)]])))
+  (if encrypt-with-password?
+    [react/view {:style {:flex 1 :align-items :center :justify-content :space-between}}
+     [react/text-input {:secure-text-entry true
+                        :auto-focus true
+                        :placeholder ""
+                        :style styles/password-text-input
+                        :on-key-press #(re-frame/dispatch [:intro-wizard/code-symbol-pressed (-> % :nativeEvent :key)])}]
+     [react/text {:style  (assoc styles/wizard-text :margin-bottom 16)} (i18n/label :t/password-description)]]
+    [numpad-container key-code confirm-failure?]))
 
 (defn enable-fingerprint []
   [vector-icons/icon :main-icons/fingerprint {:container-style {:align-items :center  :justify-content :center}
@@ -252,13 +220,7 @@
                                     :background? false}]
 
          :else
-         [react/view {:style {:flex-direction :row
-                              :justify-content :flex-end
-                              :align-self :stretch
-                              :padding-top 16
-                              :border-top-width 1
-                              :border-top-color colors/gray-lighter
-                              :margin-right 20}}
+         [react/view {:style styles/bottom-arrow}
           [components.common/bottom-button {:on-press     #(re-frame/dispatch
                                                             [:intro-wizard/step-forward-pressed])
                                             :forward? true}]])
@@ -290,7 +252,7 @@
          :else
          [react/text {:style styles/wizard-text}
           (if (or (= 5 step) (and (= 4 step) encrypt-with-password?))
-            ""
+            " "
             (i18n/label (keyword (str "intro-wizard-text" step))))]
          :else nil)])
 

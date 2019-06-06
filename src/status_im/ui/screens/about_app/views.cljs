@@ -29,8 +29,8 @@
      [react/view {:style {:flex-direction :row :margin-bottom 16}}
       [vector-icons/icon :main-icons/info {:color colors/blue
                                            :container-style {:margin-right 13}}]
-      [react/text {:style {:font-size 17 :line-height 20 :font-weight "600"}} title]]
-     [react/text {:style {:color colors/gray :font-size 15 :line-height 22}} content]]))
+      [react/text {:style styles/learn-more-title} title]]
+     [react/text {:style styles/learn-more-text} content]]))
 
 (def learn-more
   {:content learn-more-sheet
