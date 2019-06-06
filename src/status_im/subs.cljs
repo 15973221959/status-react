@@ -166,7 +166,7 @@
 (reg-root-key-sub :ethereum/current-block :ethereum/current-block)
 
 ;;ens
-(reg-root-key-sub :ens :ens)
+(reg-root-key-sub :ens/registration :ens/registration)
 
 ;;GENERAL ==============================================================================================================
 
@@ -1890,13 +1890,19 @@
    (:usernames account)))
 
 (re-frame/reg-sub
+ :ens/username
+ :<- [:account/account]
+ (fn [account [_ username]]
+   (:usernames account)))
+
+(re-frame/reg-sub
  :ens.registration/screen
- :<- [:ens]
+ :<- [:ens/registration]
  :<- [:ens.stateofus/registrar]
  :<- [:account/account]
- (fn [[{:keys [state username custom-domain?]} registrar {:keys [address public-key]}]]
-   {:state          state
-    :username       username
+ (fn [[{:keys [custom-domain? username-candidate] :as ens} registrar {:keys [address public-key]}] _]
+   {:state          (get-in ens [:states username-candidate])
+    :username       username-candidate
     :custom-domain? (or custom-domain? false)
     :contract       registrar
     :address        address

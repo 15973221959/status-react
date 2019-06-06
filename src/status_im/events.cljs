@@ -2137,37 +2137,41 @@
 ;; ENS
 
 (handlers/register-handler-fx
- :ens/set-username
+ :ens/set-username-candidate
  (fn [cofx [_ custom-domain? username]]
-   (ens/set-username cofx custom-domain? username)))
+   (ens/set-username-candidate cofx custom-domain? username)))
 
 (handlers/register-handler-fx
- :ens/navigate-back
+ :ens/clear-cache-and-navigate-back
  (fn [{:keys [db] :as cofx} _]
    (fx/merge cofx
-             {:db (-> db
-                      (ens/assoc-state :initial)
-                      (ens/assoc-username ""))}
+             {:db (assoc db :ens/registration nil)} ;; Clear cache
              (navigation/navigate-back))))
 
 (handlers/register-handler-fx
  :ens/switch-domain-type
  (fn [{:keys [db]} _]
-   {:db (-> (update-in db [:ens :custom-domain?] not)
-            (ens/assoc-state :initial)
-            (ens/assoc-username ""))}))
+   {:db (-> (update-in db [:ens/registration :custom-domain?] not)
+            (ens/empty-username-candidate))}))
 
 (handlers/register-handler-fx
  :ens/save-username
- (fn [cofx [_ username]]
-   (ens/save-username-and-navigate-back cofx username)))
+ (fn [cofx [_ custom-domain? username]]
+   (ens/save-username cofx custom-domain? username)))
+
+(handlers/register-handler-fx
+ :ens/save-username-and-navigate-back
+ (fn [cofx [_ custom-domain? username]]
+   (fx/merge cofx
+             (ens/save-username cofx custom-domain? username)
+             (navigation/navigate-back))))
 
 (handlers/register-handler-fx
  :ens/on-registration-failure
- (fn [{:keys [db]} m]
-   {:db (ens/assoc-state db :registration-failed)}))
+ (fn [{:keys [db]} [_ username]]
+   {:db (ens/assoc-state-for db username :registration-failed)}))
 
 (handlers/register-handler-fx
  :ens/register
- (fn [cofx [_ {:keys [contract username full-username address public-key]}]]
-   (ens/register-name cofx contract username full-username address public-key)))
+ (fn [cofx [_ {:keys [contract custom-domain? username address public-key]}]]
+   (ens/register-name cofx contract custom-domain? username address public-key)))

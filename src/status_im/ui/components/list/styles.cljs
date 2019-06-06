@@ -111,7 +111,6 @@
 
 (def settings-item-main-text-container
   {:flex-direction :row
-   :height         18
    :align-items    :center})
 
 (def settings-item-subtext

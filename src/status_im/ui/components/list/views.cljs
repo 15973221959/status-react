@@ -114,7 +114,7 @@
               :icon-opts {:color colors/white}}])
 
 (defn big-list-item
-  [{:keys [style text text-color subtext value action-fn active? destructive? hide-chevron?
+  [{:keys [style text text-color text-style subtext value action-fn active? destructive? hide-chevron?
            accessory-value text-color new? activity-indicator
            accessibility-label icon icon-color image-source icon-content]
     :or   {icon-color colors/blue
@@ -148,14 +148,14 @@
           [react/view {:style styles/new-label}
            [react/text {:style styles/new-label-text}
             (string/upper-case (i18n/label :t/new))]])
-        [react/text {:style (styles/settings-item-text text-color)}
+        [react/text {:style (merge (styles/settings-item-text text-color) text-style)}
          text]]
        [react/view {:style {:margin-top 2
                             :justify-content :flex-start}}
         [react/text {:style styles/settings-item-subtext
                      :number-of-lines 2}
          subtext]]]
-      [react/text {:style (styles/settings-item-text text-color)
+      [react/text {:style           (merge (styles/settings-item-text text-color) text-style)
                    :number-of-lines 1}
        text])
     (when accessory-value
