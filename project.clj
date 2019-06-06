@@ -129,7 +129,7 @@
                                                          :static-fns         true
                                                          :fn-invoke-direct   true
                                                          :optimize-constants true
-                                                         :optimizations      :advanced
+                                                         :optimizations      :simple
                                                          :pseudo-names       false
                                                          :pretty-print       false
                                                          :closure-defines    {"goog.DEBUG" false}
