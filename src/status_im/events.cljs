@@ -24,6 +24,7 @@
             [status-im.contact.core :as contact]
             [status-im.ens.core :as ens]
             [status-im.ethereum.core :as ethereum]
+            [status-im.ethereum.ens :as ethereum.ens]
             [status-im.ethereum.subscriptions :as ethereum.subscriptions]
             [status-im.ethereum.transactions.core :as ethereum.transactions]
             [status-im.extensions.core :as extensions]
@@ -2137,11 +2138,6 @@
 ;; ENS
 
 (handlers/register-handler-fx
- :ens/set-username-candidate
- (fn [cofx [_ custom-domain? username]]
-   (ens/set-username-candidate cofx custom-domain? username)))
-
-(handlers/register-handler-fx
  :ens/clear-cache-and-navigate-back
  (fn [{:keys [db] :as cofx} _]
    (fx/merge cofx
@@ -2175,3 +2171,17 @@
  :ens/register
  (fn [cofx [_ {:keys [contract custom-domain? username address public-key]}]]
    (ens/register-name cofx contract custom-domain? username address public-key)))
+
+(handlers/register-handler-fx
+ :ens/store-name-detail
+ (fn [{:keys [db]} [_ name k v]]
+   {:db (ens/assoc-details-for db name k v)}))
+
+(handlers/register-handler-fx
+ :ens/navigate-to-name
+ (fn [{:keys [db] :as cofx} [_ name]]
+   (let [registry (get ethereum.ens/ens-registries (ethereum/chain-keyword db))]
+     (fx/merge cofx
+               {:ens/resolve-address [registry name #(re-frame/dispatch [:ens/store-name-detail name :address %])]
+                :ens/resolve-pubkey  [registry name #(re-frame/dispatch [:ens/store-name-detail name :public-key %])]}
+               (navigation/navigate-to-cofx :ens-name-details {:name name})))))

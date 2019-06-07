@@ -8,7 +8,7 @@
                      :ens-main
                      :ens-register
                      :ens-terms
-                     :ens-username
+                     :ens-name-details
                      :blocked-users-list
                      :profile-photo-capture
                      :about-app

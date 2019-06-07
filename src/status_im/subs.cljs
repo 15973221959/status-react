@@ -1907,3 +1907,11 @@
     :contract       registrar
     :address        address
     :public-key     public-key}))
+
+(re-frame/reg-sub
+ :ens.name/screen
+ :<- [:ens/registration]
+ (fn [ens [_ name]]
+   (let [{:keys [address public-key]} (get-in ens [:details name])]
+     {:address    address
+      :public-key public-key})))

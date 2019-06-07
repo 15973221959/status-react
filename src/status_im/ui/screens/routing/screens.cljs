@@ -154,7 +154,7 @@
    :ens-main                         ens/main
    :ens-register                     ens/register
    :ens-terms                        ens/terms
-   :ens-username                     ens/username
+   :ens-name-details                 ens/name-details
    :blocked-users-list               contacts-list/blocked-users-list
    :profile-photo-capture            photo-capture/profile-photo-capture
    :about-app                        about-app/about-app

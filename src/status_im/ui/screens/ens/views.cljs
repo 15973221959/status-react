@@ -1,4 +1,48 @@
 (ns status-im.ui.screens.ens.views
+  "
+
+                                                +-------------+
+                                                |   Initial   |
+                                                +-----+-------+
+                                                      |
+                                                      |  Typing
+                                                      |
+                                                      v
+                                    +--------------+     +----------------+
+                                    |    Valid     |     | Invalid/reason |
+                                    +------+-------+     +-------+--------+
+                                           |                     |
+                                           +----------+----------+
+                                                      |
+                                                      | Checking
+                                                      |
+                                                      |
+                                                      v
++------------------------------------------+
+|   +--------------+  +----------------+   |
+|   | Unregistrable|  |  Registrable   |   |        +-----------------------------------+              +-------------+
+|   +--------------+  +----------------+   |        |  Connected/details                |              |  Not owned  |
+|                                          |        |  (none, address, public+key, all) |              +-------------+
+|                                          |        +----------+------------------------+
+|           Name available                 |                   |
++-------------------+----------------------+                   |
+                    |                                          |
+                    |                                          |
+                    |                                          |
+                    | Registering                              | Connecting
+                    | (on-chain, 1 tx)                         | (on-chain, 1tx per info to connect)
+                    |                                          |
+                    +-----------------------+------------------+
+                                            |
+                                            |
+                                            |  Saving
+                                            |
+                                            |
+                                    +-------+-----+
+                                    |    Saved    |
+                                    +-------------+
+
+  "
   (:require [re-frame.core :as re-frame]
             [reagent.core :as reagent]
             [status-im.ens.core :as ens]
@@ -43,46 +87,47 @@
     [react/text {:style {:font-size 15}}
      content]]])
 
-;; Username
+;; Name details
 
-(views/defview username []
-  (views/letsubs [{:keys [username address public-key]} [:ens.registration/screen]]
-    [react/view {:style {:flex 1}}
-     [status-bar/status-bar {:type :modal-white}]
-     [toolbar/simple-toolbar
-      username]
-     [react/scroll-view {:style {:flex 1}}
-      [react/view {:style {:flex 1 :margin-horizontal 16}}
-       [react/view {:flex-direction :row :align-items :center :margin-top 20}
-        [react/view {:style {:margin-right 16}}
-         [components.common/logo
-          {:size      40
-           :icon-size 16}]]
-        [react/text {:style {:typography :title :text-align-vertical :center}}
-         (str (i18n/label :t/ens-10-SNT) ", deposit unlocked")]]]
-      [react/view {:style {:margin-top 22}}
-       [section {:title   (i18n/label :t/ens-wallet-address)
-                 :content (ethereum/normalized-address address)}]
-       [react/view {:style {:margin-top 14}}
-        [section {:title   (i18n/label :t/key)
-                  :content public-key}]]
-       [react/view {:style {:margin-top 16}}
-        [list/big-list-item {:text          (i18n/label :t/ens-remove-username)
-                             :subtext       (i18n/label :t/ens-remove-hints)
-                             :text-color    colors/gray
-                             :text-style    {:font-weight "500"}
-                             :icon          :main-icons/close
-                             :icon-color    colors/gray
-                             :hide-chevron? true}]
-        [list/big-list-item {:text          (i18n/label :t/ens-release-username)
-                             :text-color    colors/gray
-                             :text-style    {:font-weight "500"}
-                             :subtext       (i18n/label :t/ens-locked)
-                             :action-fn     #(re-frame/dispatch [:navigate-to :ens-register])
-                             :icon          :main-icons/delete
-                             :icon-color    colors/gray
-                             :active?       false
-                             :hide-chevron? true}]]]]]))
+(views/defview name-details []
+  (views/letsubs [{:keys [name]} [:get-screen-params :ens-name-details]]
+    (let [{:keys [address public-key]} @(re-frame/subscribe [:ens.name/screen name])]
+      [react/view {:style {:flex 1}}
+       [status-bar/status-bar {:type :modal-white}]
+       [toolbar/simple-toolbar
+        name]
+       [react/scroll-view {:style {:flex 1}}
+        [react/view {:style {:flex 1 :margin-horizontal 16}}
+         [react/view {:flex-direction :row :align-items :center :margin-top 20}
+          [react/view {:style {:margin-right 16}}
+           [components.common/logo
+            {:size      40
+             :icon-size 16}]]
+          [react/text {:style {:typography :title :text-align-vertical :center}}
+           (str (i18n/label :t/ens-10-SNT) ", deposit unlocked")]]]
+        [react/view {:style {:margin-top 22}}
+         [section {:title   (i18n/label :t/ens-wallet-address)
+                   :content (ethereum/normalized-address address)}]
+         [react/view {:style {:margin-top 14}}
+          [section {:title   (i18n/label :t/key)
+                    :content public-key}]]
+         [react/view {:style {:margin-top 16}}
+          [list/big-list-item {:text          (i18n/label :t/ens-remove-username)
+                               :subtext       (i18n/label :t/ens-remove-hints)
+                               :text-color    colors/gray
+                               :text-style    {:font-weight "500"}
+                               :icon          :main-icons/close
+                               :icon-color    colors/gray
+                               :hide-chevron? true}]
+          [list/big-list-item {:text          (i18n/label :t/ens-release-username)
+                               :text-color    colors/gray
+                               :text-style    {:font-weight "500"}
+                               :subtext       (i18n/label :t/ens-locked)
+                               :action-fn     #(re-frame/dispatch [:navigate-to :ens-register])
+                               :icon          :main-icons/delete
+                               :icon-color    colors/gray
+                               :active?       false
+                               :hide-chevron? true}]]]]])))
 
 ;; Terms
 
@@ -374,8 +419,6 @@
    [toolbar/nav-button (actions/back #(re-frame/dispatch [:ens/clear-cache-and-navigate-back]))]
    [toolbar/content-title (i18n/label :t/ens-your-username)]])
 
-;; states: initial, (valid, invalid, too-short), (unregistrable, registrable, owned, connected), registering (from registrable), (saved, registered, registration-failed)
-
 (views/defview register []
   (views/letsubs [{:keys [address state] :as props} [:ens.registration/screen]]
     (let [checked (reagent/atom false)
@@ -434,7 +477,7 @@
     [button {:on-press #(re-frame/dispatch [:navigate-to :ens-register])
              :label    (i18n/label :t/get-started)}]]])
 
-(defn- registered [usernames]
+(defn- registered [names]
   [react/scroll-view {:style {:flex 1}}
    [react/view {:style {:flex 1 :margin-top 8}}
     [list/big-list-item {:text      (i18n/label :t/ens-add-username)
@@ -443,26 +486,26 @@
    [react/view {:style {:margin-top 22}}
     [react/text {:style {:color colors/gray :margin-horizontal 16}}
      (i18n/label :t/ens-your-usernames)]
-    (if (seq usernames)
+    (if (seq names)
       [react/view {:style {:margin-top 8}}
-       (for [username usernames]
-         ^{:key username}
+       (for [name names]
+         ^{:key name}
          [react/view
-          (let [stateofus-username (stateofus/username username)
-                s                  (or stateofus-username username)]
+          (let [stateofus-username (stateofus/username name)
+                s                  (or stateofus-username name)]
             [list/big-list-item {:text      s
                                  :subtext   (when stateofus-username stateofus/domain)
-                                 :action-fn #(re-frame/dispatch [:navigate-to :ens-username])
+                                 :action-fn #(re-frame/dispatch [:ens/navigate-to-name name])
                                  :icon      :main-icons/username}])])]
       [react/text {:style {:color colors/gray :font-size 15}}
        (i18n/label :t/ens-no-usernames)])]])
 
 (views/defview main []
-  (views/letsubs [usernames [:account/usernames]]
+  (views/letsubs [names [:account/usernames]]
     [react/view {:style {:flex 1}}
      [status-bar/status-bar {:type :modal-white}]
      [toolbar/simple-toolbar
       (i18n/label :t/ens-usernames)]
-     (if (seq usernames)
-       [registered usernames]
+     (if (seq names)
+       [registered names]
        [welcome])]))

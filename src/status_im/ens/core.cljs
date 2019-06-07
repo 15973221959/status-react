@@ -18,9 +18,14 @@
     (stateofus/subdomain username)))
 
 (re-frame/reg-fx
- ::resolve-address
+ :ens/resolve-address
  (fn [[registry name cb]]
    (ens/get-addr registry name cb)))
+
+(re-frame/reg-fx
+ :ens/resolve-pubkey
+ (fn [[registry name cb]]
+   (resolver/pubkey registry name cb)))
 
 (fx/defn save-username
   [{:keys [db] :as cofx} custom-domain? username]
@@ -31,6 +36,9 @@
 
 (defn assoc-state-for [db username state]
   (assoc-in db [:ens/registration :states username] state))
+
+(defn assoc-details-for [db username k v]
+  (assoc-in db [:ens/registration :details username k] v))
 
 (defn assoc-username-candidate [db username]
   (assoc-in db [:ens/registration :username-candidate] username))
@@ -89,8 +97,9 @@
     (> 4 (count username)) :too-short
     (valid-username? custom-domain? username) :valid
     :else :invalid))
-;
+
 (fx/defn set-username-candidate
+  {:events [:ens/set-username-candidate]}
   [{:keys [db]} custom-domain? username]
   (let [state  (state custom-domain? username)
         valid? (valid-username? custom-domain? username)]
@@ -102,4 +111,4 @@
        (let [{:keys [account/account]}        db
              {:keys [address public-key]}     account
              registry (get ens/ens-registries (ethereum/chain-keyword db))]
-         {::resolve-address [registry (name custom-domain? username) #(on-resolve registry custom-domain? username address public-key %)]})))))
+         {:ens/resolve-address [registry (name custom-domain? username) #(on-resolve registry custom-domain? username address public-key %)]})))))
