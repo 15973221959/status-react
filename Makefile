@@ -70,18 +70,20 @@ release-android: ##@build build release for Android
 	chmod u+w node_modules && \
 	cp -R status-modules/ node_modules/ && \
 	chmod u-w node_modules && \
-	react-native run-android --variant=release
+	react-native run-android --variant=release; \
+	watchman watch-del $(STATUS_REACT_HOME)
 
 release-ios: export TARGET_OS ?= ios
 release-ios: ##@build build release for iOS release
 	# Open XCode inside the Nix context
-	@git clean -dxf -f target/ios && \
+	@watchman watch-del $(STATUS_REACT_HOME) && \
+	git clean -dxf -f target/ios && \
 	$(MAKE) prod-build-ios && \
 	echo "Build in XCode, see https://status.im/build_status/ for instructions" && \
 	cp -R translations/ status-modules/ && \
 	chmod u+w node_modules && \
 	cp -R status-modules/ node_modules/ && \
-	chmod u-w node_modules && \
+	chmod u-w node_modules; && \
 	open ios/StatusIm.xcworkspace
 
 release-desktop: export TARGET_OS ?= $(HOST_OS)
@@ -89,18 +91,20 @@ release-desktop: ##@build build release for desktop release
 	@$(MAKE) prod-build-desktop && \
 	cp -R translations/ status-modules/ && \
 	cp -R status-modules/ node_modules/ && \
-	scripts/build-desktop.sh
+	scripts/build-desktop.sh; \
+	watchman watch-del $(STATUS_REACT_HOME)
 
 release-windows-desktop: export TARGET_OS ?= windows
 release-windows-desktop: ##@build build release for desktop release
 	@$(MAKE) prod-build-desktop && \
 	cp -R translations/ status-modules/ && \
 	cp -R status-modules/ node_modules/ && \
-	scripts/build-desktop.sh
+	scripts/build-desktop.sh; \
+	watchman watch-del $(STATUS_REACT_HOME)
 
 prod-build: export TARGET_OS ?= all
 prod-build:
-	lein prod-build && \
+	@lein prod-build && \
 	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.android.js && \
 	sed -i'' "s|$(STATUS_REACT_HOME)|.|g" index.ios.js
 
