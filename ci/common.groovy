@@ -63,8 +63,10 @@ def prep(type = 'nightly') {
       cp -R status-modules/ node_modules/status-modules/
     ''')
   } else {
+    // 1. remove all watchman watches
+    // 2. copy translations to node_modules
+    // 3. touch node_modules/.copied to avoid copying node_modules again during build
     // run script in the nix shell so that node_modules gets instantiated before attempting the copies
-    // touch node_modules/.copied to avoid copying node_modules again during build
     utils.nix.shell('''
       watchman watch-del-all && \
       cp -R translations/ status-modules/translations/ && \

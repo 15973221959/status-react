@@ -4,7 +4,7 @@ utils = load 'ci/utils.groovy'
 def bundle() {
   def btype = utils.getBuildType()
   /* Disable Gradle Daemon https://stackoverflow.com/questions/38710327/jenkins-builds-fail-using-the-gradle-daemon */
-  def gradleOpt = "-PbuildUrl='${currentBuild.absoluteUrl}' -Dorg.gradle.daemon=false "
+  def gradleOpt = "-PbuildUrl='${currentBuild.absoluteUrl}' -Dorg.gradle.daemon=false --console plain "
   def target = "release"
 
   if (params.BUILD_TYPE == 'pr') {

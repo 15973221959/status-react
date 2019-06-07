@@ -23,10 +23,7 @@
                  [rasom/cljs-react-navigation "0.1.4"]]
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-re-frisk "0.5.8"]
-            [lein-cljfmt "0.5.7"]
-            [rasom/lein-githooks "0.1.5"]]
-  :githooks {:auto-install true
-             :pre-commit   ["lein cljfmt check src/status_im/core.cljs $(git diff --diff-filter=d --cached --name-only src test/cljs)"]}
+            [lein-cljfmt "0.5.7"]]
   :cljfmt {:indents {letsubs [[:inner 0]]}}
   :clean-targets ["target/" "index.ios.js" "index.android.js"]
   :aliases {"prod-build"         ^{:doc "Recompile code with prod profile."}

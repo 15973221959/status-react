@@ -39,7 +39,7 @@ let
         };
     };
 
-  mavenAndNodeDeps = callPackage ./maven-and-npm-deps.nix { inherit stdenvNoCC gradle bash perl zlib src nodeProjectName androidEnvShellHook projectNodePackage developmentNodePackages status-go; };
+  mavenAndNpmDeps = callPackage ./maven-and-npm-deps { inherit stdenvNoCC gradle bash perl zlib src nodeProjectName androidEnvShellHook projectNodePackage developmentNodePackages status-go; };
 
   androidEnvShellHook = ''
     export JAVA_HOME="${openjdk}"
@@ -55,13 +55,13 @@ in
   {
     inherit androidComposition;
 
-    buildInputs = [ mavenAndNodeDeps.deps openjdk gradle ];
+    buildInputs = [ mavenAndNpmDeps.deps openjdk gradle ];
     shellHook =
       androidEnvShellHook + 
-      (mavenAndNodeDeps.shellHook mavenAndNodeDeps)+ ''
+      (mavenAndNpmDeps.shellHook mavenAndNpmDeps)+ ''
       $STATUS_REACT_HOME/scripts/generate-keystore.sh
 
-      $STATUS_REACT_HOME/nix/mobile/reset-node_modules.sh "${mavenAndNodeDeps.deps}" && \
+      $STATUS_REACT_HOME/nix/mobile/reset-node_modules.sh "${mavenAndNpmDeps.deps}" && \
       $STATUS_REACT_HOME/nix/mobile/android/fix-node_modules-permissions.sh
 
       if [ $? -ne 0 ]; then
