@@ -138,22 +138,22 @@
 (fx/defn initialize-views
   [cofx]
   (let [{{:accounts/keys [accounts] :as db} :db} cofx]
-    (if true #_(empty? accounts)
-        (navigation/navigate-to-cofx cofx :intro nil)
-        (let [account-with-notification
-              (when-not platform/desktop?
-                (notifications/lookup-contact-pubkey-from-hash
-                 cofx
-                 (first (keys (:push-notifications/stored db)))))
-              selection-fn
-              (if (not-empty account-with-notification)
-                #(filter (fn [account]
-                           (= account-with-notification
-                              (:public-key account)))
-                         %)
-                #(sort-by :last-sign-in > %))
-              {:keys [address photo-path name]} (first (selection-fn (vals accounts)))]
-          (accounts.login/open-login cofx address photo-path name)))))
+    (if (empty? accounts)
+      (navigation/navigate-to-cofx cofx :intro nil)
+      (let [account-with-notification
+            (when-not platform/desktop?
+              (notifications/lookup-contact-pubkey-from-hash
+               cofx
+               (first (keys (:push-notifications/stored db)))))
+            selection-fn
+            (if (not-empty account-with-notification)
+              #(filter (fn [account]
+                         (= account-with-notification
+                            (:public-key account)))
+                       %)
+              #(sort-by :last-sign-in > %))
+            {:keys [address photo-path name]} (first (selection-fn (vals accounts)))]
+        (accounts.login/open-login cofx address photo-path name)))))
 
 (fx/defn load-accounts-and-initialize-views
   "DB has been decrypted, load accounts and initialize-view"

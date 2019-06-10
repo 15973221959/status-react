@@ -276,5 +276,6 @@
         4 [create-code wizard-state]
         5 [confirm-code wizard-state]
         6 [enable-fingerprint]
-        7 [enable-notifications])
+        7 [enable-notifications]
+        nil nil)
       [bottom-bar wizard-state]]]))
