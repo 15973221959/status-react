@@ -16,7 +16,7 @@
                :else [react/text {:style styles/number} numpad-symbol])]]
     (if hide-container?
       number-container
-      [(react/touchable-opacity)
+      [react/touchable-opacity
        {:on-press #(on-press numpad-symbol)}
        number-container])))
 

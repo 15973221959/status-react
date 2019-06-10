@@ -36,21 +36,21 @@
       [react/view {:style {:margin-horizontal 32
                            :align-items :center
                            :justify-content :flex-end}}
-       [(react/scroll-view) {:horizontal true
-                             :paging-enabled true
-                             :ref #(reset! scroll-view-ref %)
-                             :shows-vertical-scroll-indicator false
-                             :shows-horizontal-scroll-indicator false
-                             :pinch-gesture-enabled false
-                             :on-scroll #(let [x (.-nativeEvent.contentOffset.x %)
-                                               _ (log/info "#scroll" x view-width)]
-                                           (cond (> x max-width)
-                                                 (.scrollTo @scroll-view-ref (clj->js {:x 0}))
-                                                 (< x 0)
-                                                 (.scrollTo @scroll-view-ref (clj->js {:x max-width}))
-                                                 :else (reset! scroll-x x)))
-                             :style {:width view-width
-                                     :margin-vertical 32}}
+       [react/scroll-view {:horizontal true
+                           :paging-enabled true
+                           :ref #(reset! scroll-view-ref %)
+                           :shows-vertical-scroll-indicator false
+                           :shows-horizontal-scroll-indicator false
+                           :pinch-gesture-enabled false
+                           :on-scroll #(let [x (.-nativeEvent.contentOffset.x %)
+                                             _ (log/info "#scroll" x view-width)]
+                                         (cond (> x max-width)
+                                               (.scrollTo @scroll-view-ref (clj->js {:x 0}))
+                                               (< x 0)
+                                               (.scrollTo @scroll-view-ref (clj->js {:x max-width}))
+                                               :else (reset! scroll-x x)))
+                           :style {:width view-width
+                                   :margin-vertical 32}}
         (for [s slides]
           ^{:key (:title s)}
           [react/view {:style {:width view-width
