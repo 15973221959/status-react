@@ -47,6 +47,7 @@
             [reagent.core :as reagent]
             [status-im.ens.core :as ens]
             [status-im.ethereum.core :as ethereum]
+            [status-im.ethereum.ens :as ethereum.ens]
             [status-im.ethereum.stateofus :as stateofus]
             [status-im.i18n :as i18n]
             [status-im.react-native.resources :as resources]
@@ -90,44 +91,43 @@
 ;; Name details
 
 (views/defview name-details []
-  (views/letsubs [{:keys [name]} [:get-screen-params :ens-name-details]]
-    (let [{:keys [address public-key]} @(re-frame/subscribe [:ens.name/screen name])]
-      [react/view {:style {:flex 1}}
-       [status-bar/status-bar {:type :modal-white}]
-       [toolbar/simple-toolbar
-        name]
-       [react/scroll-view {:style {:flex 1}}
-        [react/view {:style {:flex 1 :margin-horizontal 16}}
-         [react/view {:flex-direction :row :align-items :center :margin-top 20}
-          [react/view {:style {:margin-right 16}}
-           [components.common/logo
-            {:size      40
-             :icon-size 16}]]
-          [react/text {:style {:typography :title :text-align-vertical :center}}
-           (str (i18n/label :t/ens-10-SNT) ", deposit unlocked")]]]
-        [react/view {:style {:margin-top 22}}
-         [section {:title   (i18n/label :t/ens-wallet-address)
-                   :content (ethereum/normalized-address address)}]
-         [react/view {:style {:margin-top 14}}
-          [section {:title   (i18n/label :t/key)
-                    :content public-key}]]
-         [react/view {:style {:margin-top 16}}
-          [list/big-list-item {:text          (i18n/label :t/ens-remove-username)
-                               :subtext       (i18n/label :t/ens-remove-hints)
-                               :text-color    colors/gray
-                               :text-style    {:font-weight "500"}
-                               :icon          :main-icons/close
-                               :icon-color    colors/gray
-                               :hide-chevron? true}]
-          [list/big-list-item {:text          (i18n/label :t/ens-release-username)
-                               :text-color    colors/gray
-                               :text-style    {:font-weight "500"}
-                               :subtext       (i18n/label :t/ens-locked)
-                               :action-fn     #(re-frame/dispatch [:navigate-to :ens-register])
-                               :icon          :main-icons/delete
-                               :icon-color    colors/gray
-                               :active?       false
-                               :hide-chevron? true}]]]]])))
+  (views/letsubs [{:keys [name address public-key]} [:ens.name/screen]]
+    [react/view {:style {:flex 1}}
+     [status-bar/status-bar {:type :modal-white}]
+     [toolbar/simple-toolbar
+      name]
+     [react/scroll-view {:style {:flex 1}}
+      [react/view {:style {:flex 1 :margin-horizontal 16}}
+       [react/view {:flex-direction :row :align-items :center :margin-top 20}
+        [react/view {:style {:margin-right 16}}
+         [components.common/logo
+          {:size      40
+           :icon-size 16}]]
+        [react/text {:style {:typography :title :text-align-vertical :center}}
+         (str (i18n/label :t/ens-10-SNT) ", deposit unlocked")]]]
+      [react/view {:style {:margin-top 22}}
+       [section {:title   (i18n/label :t/ens-wallet-address)
+                 :content (ethereum/normalized-address address)}]
+       [react/view {:style {:margin-top 14}}
+        [section {:title   (i18n/label :t/key)
+                  :content public-key}]]
+       [react/view {:style {:margin-top 16}}
+        [list/big-list-item {:text          (i18n/label :t/ens-remove-username)
+                             :subtext       (i18n/label :t/ens-remove-hints)
+                             :text-color    colors/gray
+                             :text-style    {:font-weight "500"}
+                             :icon          :main-icons/close
+                             :icon-color    colors/gray
+                             :hide-chevron? true}]
+        [list/big-list-item {:text          (i18n/label :t/ens-release-username)
+                             :text-color    colors/gray
+                             :text-style    {:font-weight "500"}
+                             :subtext       (i18n/label :t/ens-locked)
+                             :action-fn     #(re-frame/dispatch [:navigate-to :ens-register])
+                             :icon          :main-icons/delete
+                             :icon-color    colors/gray
+                             :active?       false
+                             :hide-chevron? true}]]]]]))
 
 ;; Terms
 
@@ -177,7 +177,7 @@
       [term-point
        (i18n/label :t/ens-terms-point-10)]
       [react/view {:style {:align-items :center :margin-top 16 :margin-bottom 24}}
-       [link {:on-press #(.openURL (react/linking) (etherscan-url "0x314159265dd8dbb310642f98f50c066173c1259b"))}
+       [link {:on-press #(.openURL (react/linking) (etherscan-url (:mainnet ethereum.ens/ens-registries)))}
         (i18n/label :t/etherscan-lookup)]]]]))
 
 ;; Registration

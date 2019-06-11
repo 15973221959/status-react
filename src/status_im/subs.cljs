@@ -1910,8 +1910,10 @@
 
 (re-frame/reg-sub
  :ens.name/screen
+ :<- [:get-screen-params :ens-name-details]
  :<- [:ens/registration]
- (fn [ens [_ name]]
+ (fn [[name ens] _]
    (let [{:keys [address public-key]} (get-in ens [:details name])]
-     {:address    address
+     {:name       name
+      :address    address
       :public-key public-key})))
