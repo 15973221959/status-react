@@ -98,6 +98,7 @@ pipeline {
     }
     stage('Cleanup') {
       steps {
+        cmn.nix.shell('watchman watch-del $(pwd)')
         sh 'make clean'
       }
     }
