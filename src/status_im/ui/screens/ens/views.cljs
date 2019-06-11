@@ -75,8 +75,8 @@
                                    m)])
 
 (defn- link [{:keys [on-press]} label]
-  [react/touchable-opacity {:on-press on-press}
-   [react/text {:style {:text-align-vertical :center :color colors/blue}}
+  [react/touchable-opacity {:on-press on-press :justify-content :center}
+   [react/text {:style {:color colors/blue}}
     label]])
 
 (defn- section [{:keys [title content]}]
@@ -98,12 +98,12 @@
       name]
      [react/scroll-view {:style {:flex 1}}
       [react/view {:style {:flex 1 :margin-horizontal 16}}
-       [react/view {:flex-direction :row :align-items :center :margin-top 20}
+       [react/view {:flex-direction :row :align-items :center :justify-content :center :margin-top 20}
         [react/view {:style {:margin-right 16}}
          [components.common/logo
           {:size      40
            :icon-size 16}]]
-        [react/text {:style {:typography :title :text-align-vertical :center}}
+        [react/text {:style {:typography :title}}
          (str (i18n/label :t/ens-10-SNT) ", deposit unlocked")]]]
       [react/view {:style {:margin-top 22}}
        [section {:title   (i18n/label :t/ens-wallet-address)
@@ -148,8 +148,7 @@
      [toolbar/simple-toolbar
       (i18n/label :t/ens-terms-registration)]
      [react/view {:style {:height 136 :background-color colors/gray-lighter :justify-content :center :align-items :center}}
-      [react/text {:style {:text-align-vertical :center :text-align :center
-                           :typography :header :letter-spacing -0.275}}
+      [react/text {:style {:text-align :center :typography :header :letter-spacing -0.275}}
        (i18n/label :t/ens-terms-header)]]
      [react/view
       [term-point
@@ -219,7 +218,7 @@
      [react/activity-indicator {:color colors/white}]]
 
     (valid-domain? state)
-    (let [name (ens/name custom-domain? username)]
+    (let [name (ens/fullname custom-domain? username)]
       (if (contains? (set usernames) name)
         [disabled-input-action]
         [react/touchable-highlight {:on-press #(re-frame/dispatch (input-action props))}
@@ -273,11 +272,11 @@
   (re-frame/dispatch [:ens/register props]))
 
 (defn- agreement [{:keys [checked contract]}]
-  [react/view {:flex-direction :row :margin-left 6 :margin-top 14 :align-items :center}
+  [react/view {:flex-direction :row :margin-left 6 :margin-top 14 :align-items :center :justify-content :center}
    [checkbox/checkbox {:checked?        @checked
                        :style           {:padding 10}
                        :on-value-change #(reset! checked %)}]
-   [react/text {:style {:text-align-vertical :center}}
+   [react/text
     (i18n/label :t/ens-agree-to)]
    [link {:on-press #(re-frame/dispatch [:navigate-to :ens-terms {:contract contract}])}
     (str (i18n/label :t/ens-terms-registration) " ->")]])
@@ -320,7 +319,7 @@
    [vector-icons/icon (main-icon state) {:color colors/white}]])
 
 (defn- username-input [{:keys [custom-domain? username state] :as props} usernames]
-  [react/view {:flex-direction :row}
+  [react/view {:flex-direction :row :justify-content :center}
    [react/text-input {:on-change-text    #(on-username-change custom-domain? %)
                       :on-submit-editing #(on-registration props)
                       :auto-capitalize   :none
@@ -328,8 +327,9 @@
                       :default-value     username
                       :auto-focus        true
                       :placeholder       (default-name custom-domain?)
-                      :style             {:flex 1 (if (= state :registering) :padding-horizontal :padding-left) 48
-                                          :text-align :center :font-size 22}}]
+                      :style             {:flex 1 :font-size 22
+                                          (if (= state :registering) :padding-horizontal :padding-left) 48}}]
+
    [input-icon props usernames]])
 
 (defn- final-state-label [state]
@@ -345,10 +345,10 @@
 (defn- final-state-details [{:keys [state username]}]
   (case state
     :registered
-    [react/text {:style {:color colors/gray :font-size 14 :text-align :center}}
+    [react/text {:style {:color colors/gray :font-size 14}}
      (i18n/label :t/ens-registered)]
     :registration-failed
-    [react/text {:style {:color colors/gray :font-size 14 :text-align :center}}
+    [react/text {:style {:color colors/gray :font-size 14}}
      (i18n/label :t/ens-registration-failed)]
     :saved
     [react/view {:style {:flex-direction :row :align-items :center}}
@@ -357,8 +357,8 @@
       (stateofus/subdomain username)
       [{:style {:color colors/gray}}
        (i18n/label :t/ens-saved)]]]
-    [react/view {:flex-direction :row :margin-left 6 :margin-top 14 :align-items :center}
-     [react/text {:style {:text-align-vertical :center}}
+    [react/view {:flex-direction :row :margin-left 6 :margin-top 14 :align-items :center :justify-content :center}
+     [react/text
       (str (i18n/label :t/ens-terms-registration) " ->")]]))
 
 (defn- finalized-icon [{:keys [state]}]
@@ -376,7 +376,7 @@
    [finalized-icon props]
    [react/text {:style {:typography :header :margin-top 32 :margin-horizontal 32 :text-align :center}}
     (final-state-label state)]
-   [react/view {:align-items :center :margin-horizontal 32 :margin-top 12 :margin-bottom 20}
+   [react/view {:align-items :center :margin-horizontal 32 :margin-top 12 :margin-bottom 20 :justify-content :center}
     [final-state-details props]]
    (if (= state :registration-failed)
      [react/view

@@ -14,7 +14,7 @@
             [status-im.wallet.core :as wallet])
   (:refer-clojure :exclude [name]))
 
-(defn name [custom-domain? username]
+(defn fullname [custom-domain? username]
   (if custom-domain?
     username
     (stateofus/subdomain username)))
@@ -48,11 +48,8 @@
 (defn- on-resolve [registry custom-domain? username address public-key s]
   (cond
     (= (ethereum/normalized-address address) (ethereum/normalized-address s))
-    (resolver/pubkey registry (name custom-domain? username)
-                     (fn [ss]
-                       (if (= ss public-key)
-                         (re-frame/dispatch [:ens/set-state username :connected])
-                         (re-frame/dispatch [:ens/set-state username :owned]))))
+    (resolver/pubkey registry (fullname custom-domain? username)
+                     #(re-frame/dispatch [:ens/set-state username (if (= % public-key) :connected :owned)]))
 
     (and (nil? s) (not custom-domain?)) ;; No address for a stateofus subdomain: it can be registered
     (re-frame/dispatch [:ens/set-state username :registrable])
@@ -97,17 +94,17 @@
   {:events [:ens/set-username-candidate]}
   [{:keys [db]} custom-domain? username]
   (let [state  (state custom-domain? username)
-        valid? (valid-username? custom-domain? username)]
+        valid? (valid-username? custom-domain? username)
+        name (fullname custom-domain? username)]
     (merge
      {:db (-> db
               (assoc-username-candidate username)
               (assoc-state-for username state))}
-     (when-let [name (name custom-domain? username)]
-       (when (= :valid state)
-         (let [{:keys [account/account]}        db
-               {:keys [address public-key]}     account
-               registry (get ens/ens-registries (ethereum/chain-keyword db))]
-           {:ens/resolve-address [registry name #(on-resolve registry custom-domain? username address public-key %)]}))))))
+     (when (and name (= :valid state))
+       (let [{:keys [account/account]}        db
+             {:keys [address public-key]}     account
+             registry (get ens/ens-registries (ethereum/chain-keyword db))]
+         {:ens/resolve-address [registry name #(on-resolve registry custom-domain? username address public-key %)]})))))
 
 (fx/defn clear-cache-and-navigate-back
   {:events [:ens/clear-cache-and-navigate-back]}
@@ -125,7 +122,7 @@
 (fx/defn save-username
   {:events [:ens/save-username]}
   [{:keys [db] :as cofx} custom-domain? username]
-  (let [name (name custom-domain? username)
+  (let [name (fullname custom-domain? username)
         db   (update-in db [:account/account :usernames] #((fnil conj []) %1 %2) name)]
     (accounts.update/account-update cofx
                                     {:usernames (get-in db [:account/account :usernames])}

@@ -22,7 +22,6 @@
             [status-im.contact-recovery.core :as contact-recovery]
             [status-im.contact.block :as contact.block]
             [status-im.contact.core :as contact]
-            [status-im.ens.core :as ens]
             [status-im.ethereum.core :as ethereum]
             [status-im.ethereum.ens :as ethereum.ens]
             [status-im.ethereum.subscriptions :as ethereum.subscriptions]
