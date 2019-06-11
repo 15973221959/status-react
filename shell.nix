@@ -32,7 +32,7 @@ in mkShell' {
     wget
   ] ++
   (if useFastlanePkg then [ fastlane' ] else lib.optionals platform.targetMobile [ bundler ruby ]); # bundler/ruby used for fastlane on macOS
-  inputsFrom = [ projectDeps ];
+  inputsFrom = projectDeps.buildInputs;
   TARGET_OS = target-os;
   shellHook = ''
     set -e
