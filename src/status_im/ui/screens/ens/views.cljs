@@ -75,7 +75,7 @@
                                    m)])
 
 (defn- link [{:keys [on-press]} label]
-  [react/touchable-opacity {:on-press on-press :justify-content :center}
+  [react/touchable-opacity {:on-press on-press :style {:justify-content :center}}
    [react/text {:style {:color colors/blue}}
     label]])
 
@@ -98,7 +98,7 @@
       name]
      [react/scroll-view {:style {:flex 1}}
       [react/view {:style {:flex 1 :margin-horizontal 16}}
-       [react/view {:flex-direction :row :align-items :center :justify-content :center :margin-top 20}
+       [react/view {:flex-direction :row :align-items :center :margin-top 20}
         [react/view {:style {:margin-right 16}}
          [components.common/logo
           {:size      40
@@ -357,7 +357,7 @@
       (stateofus/subdomain username)
       [{:style {:color colors/gray}}
        (i18n/label :t/ens-saved)]]]
-    [react/view {:flex-direction :row :margin-left 6 :margin-top 14 :align-items :center :justify-content :center}
+    [react/view {:flex-direction :row :margin-left 6 :margin-top 14 :align-items :center}
      [react/text
       (str (i18n/label :t/ens-terms-registration) " ->")]]))
 
